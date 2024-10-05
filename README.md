@@ -23,6 +23,8 @@ cmake -DCMAKE_BUILD_TYPE=Debug
       path/to/cmakefile
 ```
 
+**Attention:** The llvm now needs to change a little bit see [Fix issues of ClangIR](https://github.com/ShlKan/CPP_Analysis/issues/1)
+
 ### 1.2 Building CPP_Analysis
 You can use the following command to compile CPP_Analysis project.
 ```

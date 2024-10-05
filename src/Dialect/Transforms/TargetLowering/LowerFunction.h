@@ -15,13 +15,13 @@
 #ifndef LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_LOWERFUNCTION_H
 #define LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_LOWERFUNCTION_H
 
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/TypeEvaluationKind.h"
 #include "CIRCXXABI.h"
 #include "LowerCall.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Support/LogicalResult.h"
 #include "clang/Basic/TargetInfo.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/TypeEvaluationKind.h"
 
 namespace mlir {
 namespace cir {

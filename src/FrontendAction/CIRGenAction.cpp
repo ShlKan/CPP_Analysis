@@ -6,7 +6,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CIRFrontendAction/CIRGenAction.h"
+#include "CIRFrontendAction/CIRGenAction.h"
+#include "CIR/CIRGenerator.h"
+#include "CIR/CIRToCIRPasses.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/LowerToLLVM.h"
+#include "CIR/Passes.h"
+#include "CIROptions.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/IR/BuiltinOps.h"
@@ -22,11 +28,6 @@
 #include "clang/Basic/LangStandard.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/TargetInfo.h"
-#include "clang/CIR/CIRGenerator.h"
-#include "clang/CIR/CIRToCIRPasses.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/LowerToLLVM.h"
-#include "clang/CIR/Passes.h"
 #include "clang/CodeGen/BackendUtil.h"
 #include "clang/CodeGen/ModuleBuilder.h"
 #include "clang/Driver/DriverDiagnostic.h"
@@ -95,7 +96,7 @@ lowerFromCIRToLLVMIR(const clang::FrontendOptions &feOptions,
                      mlir::ModuleOp mlirMod,
                      std::unique_ptr<mlir::MLIRContext> mlirCtx,
                      llvm::LLVMContext &llvmCtx, bool disableVerifier = false) {
-  if (feOptions.ClangIRDirectLowering)
+  if (false) //** feOptions.ClangIRDirectLowering)
     return direct::lowerDirectlyFromCIRToLLVMIR(mlirMod, llvmCtx,
                                                 disableVerifier);
   else
@@ -114,6 +115,7 @@ class CIRGenConsumer : public clang::ASTConsumer {
   const TargetOptions &targetOptions;
   const LangOptions &langOptions;
   const FrontendOptions &feOptions;
+  const CIROptions &cirOptions;
 
   std::unique_ptr<raw_pwrite_stream> outputStream;
 
@@ -129,15 +131,15 @@ public:
                  const CodeGenOptions &codeGenOptions,
                  const TargetOptions &targetOptions,
                  const LangOptions &langOptions,
-                 const FrontendOptions &feOptions,
+                 const FrontendOptions &feOptions, const CIROptions &cirOptions,
                  std::unique_ptr<raw_pwrite_stream> os)
       : action(action), diagnosticsEngine(diagnosticsEngine),
         headerSearchOptions(headerSearchOptions),
         codeGenOptions(codeGenOptions), targetOptions(targetOptions),
-        langOptions(langOptions), feOptions(feOptions),
+        langOptions(langOptions), feOptions(feOptions), cirOptions(cirOptions),
         outputStream(std::move(os)), FS(VFS),
         gen(std::make_unique<CIRGenerator>(diagnosticsEngine, std::move(VFS),
-                                           codeGenOptions)) {}
+                                           codeGenOptions, cirOptions)) {}
 
   void Initialize(ASTContext &ctx) override {
     assert(!astContext && "initialized multiple times");
@@ -173,7 +175,7 @@ public:
     // global codegen, followed by running CIR passes.
     gen->HandleTranslationUnit(C);
 
-    if (!feOptions.ClangIRDisableCIRVerifier)
+    if (!cirOptions.ClangIRDisableCIRVerifier)
       if (!gen->verifyModule()) {
         llvm::report_fatal_error(
             "CIR codegen: module verification error before running CIR passes");
@@ -187,29 +189,30 @@ public:
       // Sanitize passes options. MLIR uses spaces between pass options
       // and since that's hard to fly in clang, we currently use ';'.
       std::string lifetimeOpts, idiomRecognizerOpts, libOptOpts;
-      if (feOptions.ClangIRLifetimeCheck)
-        lifetimeOpts = sanitizePassOptions(feOptions.ClangIRLifetimeCheckOpts);
-      if (feOptions.ClangIRIdiomRecognizer)
+      if (cirOptions.ClangIRLifetimeCheck)
+        lifetimeOpts = sanitizePassOptions(cirOptions.ClangIRLifetimeCheckOpts);
+      if (cirOptions.ClangIRIdiomRecognizer)
         idiomRecognizerOpts =
-            sanitizePassOptions(feOptions.ClangIRIdiomRecognizerOpts);
-      if (feOptions.ClangIRLibOpt)
-        libOptOpts = sanitizePassOptions(feOptions.ClangIRLibOptOpts);
+            sanitizePassOptions(cirOptions.ClangIRIdiomRecognizerOpts);
+      if (cirOptions.ClangIRLibOpt)
+        libOptOpts = sanitizePassOptions(cirOptions.ClangIRLibOptOpts);
 
       // Setup and run CIR pipeline.
       std::string passOptParsingFailure;
       if (runCIRToCIRPasses(
-              mlirMod, mlirCtx.get(), C, !feOptions.ClangIRDisableCIRVerifier,
-              feOptions.ClangIRLifetimeCheck, lifetimeOpts,
-              feOptions.ClangIRIdiomRecognizer, idiomRecognizerOpts,
-              feOptions.ClangIRLibOpt, libOptOpts, passOptParsingFailure,
+              mlirMod, mlirCtx.get(), C, !cirOptions.ClangIRDisableCIRVerifier,
+              cirOptions.ClangIRLifetimeCheck, lifetimeOpts,
+              cirOptions.ClangIRIdiomRecognizer, idiomRecognizerOpts,
+              cirOptions.ClangIRLibOpt, libOptOpts, passOptParsingFailure,
               action == CIRGenAction::OutputType::EmitCIRFlat,
               action == CIRGenAction::OutputType::EmitMLIR,
-              feOptions.ClangIREnableCallConvLowering,
-              feOptions.ClangIREnableMem2Reg)
+              cirOptions.ClangIREnableCallConvLowering,
+              cirOptions.ClangIREnableMem2Reg)
               .failed()) {
         if (!passOptParsingFailure.empty())
-          diagnosticsEngine.Report(diag::err_drv_cir_pass_opt_parsing)
-              << feOptions.ClangIRLifetimeCheckOpts;
+          // TODO: add diag::err_drv_cir_pass_opt_parsing to the right place,
+          // Currently it is set to 1000.
+          diagnosticsEngine.Report(1000) << cirOptions.ClangIRLifetimeCheckOpts;
         else
           llvm::report_fatal_error("CIR codegen: MLIR pass manager fails "
                                    "when running CIR passes!");
@@ -217,7 +220,7 @@ public:
       }
     };
 
-    if (!feOptions.ClangIRDisablePasses) {
+    if (!cirOptions.ClangIRDisablePasses) {
       // Handle source manager properly given that lifetime analysis
       // might emit warnings and remarks.
       auto &clangSourceMgr = C.getSourceManager();
@@ -230,7 +233,7 @@ public:
       llvm::SourceMgr mlirSourceMgr;
       mlirSourceMgr.AddNewSourceBuffer(std::move(FileBuf), llvm::SMLoc());
 
-      if (feOptions.ClangIRVerifyDiags) {
+      if (cirOptions.ClangIRVerifyDiags) {
         mlir::SourceMgrDiagnosticVerifierHandler sourceMgrHandler(
             mlirSourceMgr, mlirCtx.get());
         mlirCtx->printOpOnDiagnostic(false);
@@ -256,7 +259,7 @@ public:
     case CIRGenAction::OutputType::EmitCIRFlat:
       if (outputStream && mlirMod) {
         // Emit remaining defaulted C++ methods
-        if (!feOptions.ClangIRDisableEmitCXXDefault)
+        if (!cirOptions.ClangIRDisableEmitCXXDefault)
           gen->buildDefaultMethods();
 
         // FIXME: we cannot roundtrip prettyForm=true right now.
@@ -281,7 +284,7 @@ public:
       llvm::LLVMContext llvmCtx;
       auto llvmModule =
           lowerFromCIRToLLVMIR(feOptions, mlirMod, std::move(mlirCtx), llvmCtx,
-                               feOptions.ClangIRDisableCIRVerifier);
+                               cirOptions.ClangIRDisableCIRVerifier);
 
       llvmModule->setTargetTriple(targetOptions.Triple);
 
@@ -313,9 +316,8 @@ public:
     gen->CompleteTentativeDefinition(D);
   }
 
-  void CompleteExternalDeclaration(VarDecl *D) override {
-    llvm_unreachable("NYI");
-  }
+  // TODO: override is removed.
+  void CompleteExternalDeclaration(VarDecl *D) { llvm_unreachable("NYI"); }
 
   void AssignInheritanceModel(CXXRecordDecl *RD) override {
     llvm_unreachable("NYI");
@@ -373,10 +375,13 @@ CIRGenAction::CreateASTConsumer(CompilerInstance &ci, StringRef inputFile) {
   if (!out)
     out = getOutputStream(ci, inputFile, action);
 
+  // FIX: This needs to obtain from other places.
+  CIROptions cirOptions;
+
   auto Result = std::make_unique<cir::CIRGenConsumer>(
       action, ci.getDiagnostics(), &ci.getVirtualFileSystem(),
       ci.getHeaderSearchOpts(), ci.getCodeGenOpts(), ci.getTargetOpts(),
-      ci.getLangOpts(), ci.getFrontendOpts(), std::move(out));
+      ci.getLangOpts(), ci.getFrontendOpts(), cirOptions, std::move(out));
   cgConsumer = Result.get();
 
   // Enable generating macro debug info only when debug info is not disabled and

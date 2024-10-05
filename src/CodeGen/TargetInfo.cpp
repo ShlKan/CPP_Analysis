@@ -5,7 +5,7 @@
 #include "CIRGenTypes.h"
 
 #include "clang/Basic/TargetInfo.h"
-#include "clang/CIR/Target/x86.h"
+#include "CIR/Target/x86.h"
 
 using namespace cir;
 using namespace clang;

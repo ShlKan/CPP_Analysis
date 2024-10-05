@@ -14,9 +14,9 @@ add_clang_library(clangCIRLoweringHelpers
   MLIRCIRASTAttrInterfacesIncGen
   MLIRCIROpInterfacesIncGen
   MLIRCIRLoopOpInterfaceIncGen
-  MLIRBuiltinLocationAttributesIncGen
-  MLIRBuiltinTypeInterfacesIncGen
-  MLIRFunctionInterfacesIncGen
+  #MLIRBuiltinLocationAttributesIncGen
+  #MLIRBuiltinTypeInterfacesIncGen
+  #MLIRFunctionInterfacesIncGen
 
   LINK_LIBS
   clangAST

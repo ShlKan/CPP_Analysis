@@ -14,15 +14,15 @@
 #include "CIRGenCXXABI.h"
 #include "CIRGenModule.h"
 #include "CIRGenOpenMPRuntime.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/MissingFeatures.h"
 
 #include "clang/AST/ASTLambda.h"
 #include "clang/AST/ExprObjC.h"
 #include "clang/Basic/Builtins.h"
 #include "clang/Basic/DiagnosticCategories.h"
 #include "clang/Basic/TargetInfo.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Dialect/IR/FPEnv.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/FPEnv.h"
 #include "clang/Frontend/FrontendDiagnostic.h"
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"

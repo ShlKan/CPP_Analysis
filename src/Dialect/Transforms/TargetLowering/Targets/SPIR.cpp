@@ -7,12 +7,12 @@
 //===----------------------------------------------------------------------===//
 
 #include "ABIInfoImpl.h"
+#include "CIR/ABIArgInfo.h"
+#include "CIR/MissingFeatures.h"
 #include "LowerFunctionInfo.h"
 #include "LowerTypes.h"
 #include "TargetInfo.h"
 #include "TargetLoweringInfo.h"
-#include "clang/CIR/ABIArgInfo.h"
-#include "clang/CIR/MissingFeatures.h"
 #include "llvm/Support/ErrorHandling.h"
 
 using ABIArgInfo = ::cir::ABIArgInfo;

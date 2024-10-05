@@ -16,9 +16,9 @@
 #ifndef LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_CIRTOCIRARGMAPPING_H
 #define LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_CIRTOCIRARGMAPPING_H
 
+#include "CIR/ABIArgInfo.h"
 #include "CIRLowerContext.h"
 #include "LowerFunctionInfo.h"
-#include "clang/CIR/ABIArgInfo.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/ErrorHandling.h"
 

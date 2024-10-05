@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
 #include "mlir/IR/Matchers.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Interfaces/DataLayoutInterfaces.h"
 #include "mlir/Interfaces/MemorySlotInterfaces.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/TypeSwitch.h"
 
@@ -50,8 +50,7 @@ void cir::AllocaOp::handleBlockArgument(const MemorySlot &slot,
 
 std::optional<PromotableAllocationOpInterface>
 cir::AllocaOp::handlePromotionComplete(const MemorySlot &slot,
-                                       Value defaultValue,
-                                       OpBuilder &builder) {
+                                       Value defaultValue, OpBuilder &builder) {
   if (defaultValue && defaultValue.use_empty())
     defaultValue.getDefiningOp()->erase();
   this->erase();
@@ -148,8 +147,8 @@ DeletionKind cir::CopyOp::removeBlockingUses(
     const DataLayout &dataLayout) {
   if (loadsFrom(slot))
     builder.create<cir::StoreOp>(getLoc(), reachingDefinition, getDst(), false,
-                                  mlir::IntegerAttr{},
-                                  mlir::cir::MemOrderAttr());
+                                 mlir::IntegerAttr{},
+                                 mlir::cir::MemOrderAttr());
   return DeletionKind::Delete;
 }
 

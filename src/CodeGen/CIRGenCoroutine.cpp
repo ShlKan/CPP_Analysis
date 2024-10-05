@@ -13,7 +13,7 @@
 #include "CIRGenFunction.h"
 #include "clang/AST/StmtCXX.h"
 #include "clang/AST/StmtVisitor.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
 #include "llvm/ADT/ScopeExit.h"
 
 using namespace clang;

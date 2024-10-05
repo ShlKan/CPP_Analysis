@@ -21,9 +21,9 @@
 #include "clang/AST/Attr.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/GlobalDecl.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/FnInfoOpts.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/FnInfoOpts.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cassert>
 
@@ -33,7 +33,7 @@
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/SymbolTable.h"
 #include "mlir/IR/Types.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/MissingFeatures.h"
 
 using namespace cir;
 using namespace clang;

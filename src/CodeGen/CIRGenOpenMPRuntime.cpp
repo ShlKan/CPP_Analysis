@@ -13,6 +13,8 @@
 #include "CIRGenOpenMPRuntime.h"
 #include "CIRGenFunction.h"
 #include "CIRGenModule.h"
+#include "mlir/Dialect/OpenMP/OpenMPClauseOperands.h"
+#include "mlir/Dialect/OpenMP/OpenMPDialect.h"
 
 using namespace cir;
 using namespace clang;
@@ -65,7 +67,10 @@ void CIRGenOpenMPRuntime::emitTaskWaitCall(CIRGenBuilderTy &builder,
     // TODO: Need to support taskwait with dependences in the OpenMPIRBuilder.
     // TODO(cir): This could change in the near future when OpenMP 5.0 gets
     // supported by MLIR
-    builder.create<mlir::omp::TaskwaitOp>(Loc);
+    // By Shuanglong, I commented the following. clangir use old mlir which this
+    // create function do nothing. The new mlir has no such build function. I
+    // will consider update this when it is needed.
+    // builder.create<mlir::omp::TaskwaitOp>(Loc);
   } else {
     llvm_unreachable("NYI");
   }

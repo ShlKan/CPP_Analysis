@@ -13,6 +13,7 @@
 #ifndef LLVM_CLANG_LIB_CODEGEN_CIRGENMODULE_H
 #define LLVM_CLANG_LIB_CODEGEN_CIRGENMODULE_H
 
+#include "CIR/MissingFeatures.h"
 #include "CIRGenBuilder.h"
 #include "CIRGenCall.h"
 #include "CIRGenOpenCLRuntime.h"
@@ -20,21 +21,22 @@
 #include "CIRGenTypes.h"
 #include "CIRGenVTables.h"
 #include "CIRGenValue.h"
-#include "clang/CIR/MissingFeatures.h"
 
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRDataLayout.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIROpsEnums.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/Interfaces/CIROpInterfaces.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/StmtVisitor.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/TargetInfo.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Dialect/IR/CIROpsEnums.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/Interfaces/CIROpInterfaces.h"
 
 #include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/SmallPtrSet.h"
+
+#include "../FrontendAction/CIROptions.h"
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/Builders.h"
@@ -63,7 +65,7 @@ class CIRGenModule : public CIRGenTypeCache {
 
 public:
   CIRGenModule(mlir::MLIRContext &context, clang::ASTContext &astctx,
-               const clang::CodeGenOptions &CGO,
+               const clang::CodeGenOptions &CGO, const CIROptions &CIROption,
                clang::DiagnosticsEngine &Diags);
 
   ~CIRGenModule();
@@ -85,7 +87,10 @@ private:
 
   const clang::CodeGenOptions &codeGenOpts;
 
-  /// A "module" matches a c/cpp source file: containing a list of functions.
+  const CIROptions &cirOptions;
+
+  /// A "module" matches a c/cpp source file: containing a list of
+  /// functions.
   mlir::ModuleOp theModule;
 
   clang::DiagnosticsEngine &Diags;
@@ -149,6 +154,7 @@ public:
   clang::ASTContext &getASTContext() const { return astCtx; }
   const clang::TargetInfo &getTarget() const { return target; }
   const clang::CodeGenOptions &getCodeGenOpts() const { return codeGenOpts; }
+  const CIROptions &getCIROptions() const { return cirOptions; }
   clang::DiagnosticsEngine &getDiags() const { return Diags; }
   CIRGenTypes &getTypes() { return genTypes; }
   const clang::LangOptions &getLangOpts() const { return langOpts; }

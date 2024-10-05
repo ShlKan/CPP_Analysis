@@ -16,11 +16,11 @@
 #include "CIRGenFunction.h"
 #include "CIRGenModule.h"
 #include "TargetInfo.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/MissingFeatures.h"
 
 // TODO(cir): we shouldn't need this but we currently reuse intrinsic IDs for
 // convenience.
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
 #include "llvm/IR/Intrinsics.h"
 
 #include "clang/AST/GlobalDecl.h"
@@ -30,7 +30,7 @@
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/Value.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "llvm/Support/ErrorHandling.h"
 
 using namespace cir;

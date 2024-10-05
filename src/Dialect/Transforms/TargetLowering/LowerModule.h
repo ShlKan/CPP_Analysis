@@ -14,6 +14,9 @@
 #ifndef LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_LOWERMODULE_H
 #define LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_LOWERMODULE_H
 
+#include "CIR/Dialect/IR/CIRDataLayout.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/MissingFeatures.h"
 #include "CIRLowerContext.h"
 #include "LowerTypes.h"
 #include "TargetLoweringInfo.h"
@@ -23,9 +26,6 @@
 #include "mlir/Interfaces/DataLayoutInterfaces.h"
 #include "clang/Basic/LangOptions.h"
 #include "clang/Basic/TargetInfo.h"
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/MissingFeatures.h"
 #include <memory>
 
 namespace mlir {

@@ -19,7 +19,7 @@
 #define LLVM_CLANG_LIB_CIRGEN_EHSCOPESTACK_H
 
 #include "mlir/IR/Value.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
 

@@ -13,7 +13,7 @@
 
 // FIXME(cir): This header file is not exposed to the public API, but can be
 // reused by CIR ABI lowering since it holds target-specific information.
-#include "../../../../Basic/Targets.h"
+#include "Basic/Targets.h"
 #include "clang/Basic/LangOptions.h"
 #include "clang/Basic/TargetOptions.h"
 
@@ -26,7 +26,7 @@
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Support/LogicalResult.h"
-#include "clang/CIR/Target/AArch64.h"
+#include "CIR/Target/AArch64.h"
 #include "llvm/Support/ErrorHandling.h"
 
 using MissingFeatures = ::cir::MissingFeatures;

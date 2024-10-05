@@ -10,11 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Dialect/IR/CIRTypesDetails.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRTypesDetails.h"
+#include "CIR/MissingFeatures.h"
 
 #include "mlir/IR/Attributes.h"
 #include "mlir/IR/BuiltinAttributes.h"
@@ -25,8 +25,8 @@
 #include "mlir/Support/LLVM.h"
 #include "mlir/Support/LogicalResult.h"
 
-#include "clang/CIR/Interfaces/ASTAttrInterfaces.h"
-#include "clang/CIR/Interfaces/CIRFPTypeInterface.h"
+#include "CIR/Interfaces/ASTAttrInterfaces.h"
+#include "CIR/Interfaces/CIRFPTypeInterface.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
@@ -57,7 +57,7 @@ static void printPointerAddrSpace(mlir::AsmPrinter &p,
 //===----------------------------------------------------------------------===//
 
 #define GET_TYPEDEF_CLASSES
-#include "clang/CIR/Dialect/IR/CIROpsTypes.cpp.inc"
+#include "CIR/Dialect/IR/CIROpsTypes.cpp.inc"
 
 using namespace mlir;
 using namespace mlir::cir;
@@ -1043,7 +1043,7 @@ void CIRDialect::registerTypes() {
   // Register tablegen'd types.
   addTypes<
 #define GET_TYPEDEF_LIST
-#include "clang/CIR/Dialect/IR/CIROpsTypes.cpp.inc"
+#include "CIR/Dialect/IR/CIROpsTypes.cpp.inc"
       >();
 
   // Register raw C++ types.

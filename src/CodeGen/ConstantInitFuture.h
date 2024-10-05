@@ -18,7 +18,7 @@
 #define LLVM_CLANG_CIR_CODEGEN_CONSTANTINITFUTURE_H
 
 #include "mlir/IR/Attributes.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "llvm/ADT/PointerUnion.h"
 
 // Forward-declare ConstantInitBuilderBase and give it a

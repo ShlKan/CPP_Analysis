@@ -10,6 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/LowerToMLIR.h"
+#include "CIR/LoweringHelpers.h"
+#include "CIR/Passes.h"
 #include "LowerToMLIRHelpers.h"
 #include "mlir/Conversion/AffineToStandard/AffineToStandard.h"
 #include "mlir/Conversion/ArithToLLVM/ArithToLLVM.h"
@@ -44,11 +49,6 @@
 #include "mlir/Target/LLVMIR/Dialect/OpenMP/OpenMPToLLVMIRTranslation.h"
 #include "mlir/Target/LLVMIR/Export.h"
 #include "mlir/Transforms/DialectConversion.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/LoweringHelpers.h"
-#include "clang/CIR/LowerToMLIR.h"
-#include "clang/CIR/Passes.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/Sequence.h"
 #include "llvm/ADT/SmallVector.h"

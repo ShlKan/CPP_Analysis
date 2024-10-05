@@ -6,9 +6,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CIR/Interfaces/CIRFPTypeInterface.h"
+#include "CIR/Interfaces/CIRFPTypeInterface.h"
 
 using namespace mlir::cir;
 
 /// Include the generated interfaces.
-#include "clang/CIR/Interfaces/CIRFPTypeInterface.cpp.inc"
+#include "CIR/Interfaces/CIRFPTypeInterface.cpp.inc"

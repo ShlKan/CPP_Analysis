@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CIR/Dialect/IR/FPEnv.h"
+#include "CIR/Dialect/IR/FPEnv.h"
 
 namespace cir {
 

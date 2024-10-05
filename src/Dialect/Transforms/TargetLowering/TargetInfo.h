@@ -16,8 +16,8 @@
 
 #include "LowerModule.h"
 #include "TargetLoweringInfo.h"
-#include "clang/CIR/Target/AArch64.h"
-#include "clang/CIR/Target/x86.h"
+#include "CIR/Target/AArch64.h"
+#include "CIR/Target/x86.h"
 
 namespace mlir {
 namespace cir {

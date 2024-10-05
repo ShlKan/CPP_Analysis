@@ -9,7 +9,7 @@
 // This file contains helper functions for lowering from CIR to LLVM or MLIR.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/CIR/LoweringHelpers.h"
+#include "CIR/LoweringHelpers.h"
 
 mlir::DenseElementsAttr
 convertStringAttrToDenseElementsAttr(mlir::cir::ConstArrayAttr attr,

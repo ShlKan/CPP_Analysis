@@ -1,3 +1,5 @@
+include_directories(${LLVM_CMAKE_DIR}/../../../clang/lib/)
+include_directories(.)
 add_clang_library(TargetLowering
   ABIInfo.cpp
   ABIInfoImpl.cpp

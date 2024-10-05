@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/IR/DialectRegistry.h"
 #include "mlir/Target/LLVMIR/LLVMTranslationInterface.h"
 #include "mlir/Target/LLVMIR/ModuleTranslation.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/IR/Constant.h"
 #include "llvm/IR/GlobalVariable.h"
@@ -72,10 +72,10 @@ private:
             attribute.getValue())) {
       auto *int32Ty = llvm::IntegerType::get(llvmContext, 32);
       llvm::Metadata *oclVerElts[] = {
-          llvm::ConstantAsMetadata::get(
-              llvm::ConstantInt::get(int32Ty, openclVersionAttr.getMajorVersion())),
-          llvm::ConstantAsMetadata::get(
-              llvm::ConstantInt::get(int32Ty, openclVersionAttr.getMinorVersion()))};
+          llvm::ConstantAsMetadata::get(llvm::ConstantInt::get(
+              int32Ty, openclVersionAttr.getMajorVersion())),
+          llvm::ConstantAsMetadata::get(llvm::ConstantInt::get(
+              int32Ty, openclVersionAttr.getMinorVersion()))};
       llvm::NamedMDNode *oclVerMD =
           llvmModule->getOrInsertNamedMetadata("opencl.ocl.version");
       oclVerMD->addOperand(llvm::MDNode::get(llvmContext, oclVerElts));
@@ -211,7 +211,7 @@ private:
     };
 
     bool shouldEmitArgName = !!clArgMetadata.getName();
-    
+
     auto addressSpaceValues =
         clArgMetadata.getAddrSpace().getAsValueRange<mlir::IntegerAttr>();
 

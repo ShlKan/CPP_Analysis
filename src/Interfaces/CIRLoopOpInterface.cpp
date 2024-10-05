@@ -6,10 +6,10 @@
 //
 //===---------------------------------------------------------------------===//
 
-#include "clang/CIR/Interfaces/CIRLoopOpInterface.h"
+#include "CIR/Interfaces/CIRLoopOpInterface.h"
 
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Interfaces/CIRLoopOpInterface.cpp.inc"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Interfaces/CIRLoopOpInterface.cpp.inc"
 #include "llvm/Support/ErrorHandling.h"
 
 namespace mlir {

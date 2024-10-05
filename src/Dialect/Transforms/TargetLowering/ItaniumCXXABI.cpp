@@ -81,7 +81,7 @@ CIRCXXABI *CreateItaniumCXXABI(LowerModule &LM) {
                              /*UseARMGuardVarABI=*/true);
 
   case clang::TargetCXXABI::GenericItanium:
-    if (LM.getTargetInfo().getTriple().getArch() == llvm::Triple::le32) {
+    if (LM.getTargetInfo().getTriple().getArch() == llvm::Triple::aarch64_32) {
       llvm_unreachable("NYI");
     }
     return new ItaniumCXXABI(LM);

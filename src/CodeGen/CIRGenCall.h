@@ -21,7 +21,7 @@
 
 #include "llvm/ADT/SmallVector.h"
 
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 
 #include "mlir/IR/BuiltinOps.h"
 

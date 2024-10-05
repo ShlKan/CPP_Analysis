@@ -17,7 +17,7 @@
 #include "clang/AST/RecordLayout.h"
 #include "clang/Basic/NoSanitizeList.h"
 #include "clang/Basic/TargetBuiltins.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/MissingFeatures.h"
 
 using namespace clang;
 using namespace cir;

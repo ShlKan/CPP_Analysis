@@ -15,15 +15,15 @@
 // TODO(cir): Refactor this to follow some level of codegen parity.
 
 #include "../LoweringPrepareItaniumCXXABI.h"
+#include "CIR/Dialect/Builder/CIRBaseBuilder.h"
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRDataLayout.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/MissingFeatures.h"
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/Value.h"
 #include "mlir/IR/ValueRange.h"
 #include "clang/Basic/TargetInfo.h"
-#include "clang/CIR/Dialect/Builder/CIRBaseBuilder.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/MissingFeatures.h"
 
 using namespace cir;
 

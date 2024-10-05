@@ -20,6 +20,7 @@
 #include "CIRGenValue.h"
 #include "TargetInfo.h"
 
+#include "CIR/MissingFeatures.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/IR/Attributes.h"
@@ -31,8 +32,12 @@
 #include "mlir/IR/OperationSupport.h"
 #include "mlir/IR/SymbolTable.h"
 #include "mlir/IR/Verifier.h"
-#include "clang/CIR/MissingFeatures.h"
 
+#include "CIR/CIRGenerator.h"
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIROpsEnums.h"
+#include "CIR/LowerToLLVM.h"
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/DeclGroup.h"
@@ -51,11 +56,6 @@
 #include "clang/Basic/LangStandard.h"
 #include "clang/Basic/NoSanitizeList.h"
 #include "clang/Basic/SourceLocation.h"
-#include "clang/CIR/CIRGenerator.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Dialect/IR/CIROpsEnums.h"
-#include "clang/CIR/LowerToLLVM.h"
 #include "clang/Frontend/FrontendDiagnostic.h"
 #include "clang/Lex/Preprocessor.h"
 
@@ -99,9 +99,10 @@ static CIRGenCXXABI *createCXXABI(CIRGenModule &CGM) {
 CIRGenModule::CIRGenModule(mlir::MLIRContext &context,
                            clang::ASTContext &astctx,
                            const clang::CodeGenOptions &CGO,
+                           const CIROptions &CIROptions,
                            DiagnosticsEngine &Diags)
     : builder(context, *this), astCtx(astctx), langOpts(astctx.getLangOpts()),
-      codeGenOpts(CGO),
+      codeGenOpts(CGO), cirOptions(CIROptions),
       theModule{mlir::ModuleOp::create(builder.getUnknownLoc())}, Diags(Diags),
       target(astCtx.getTargetInfo()), ABI(createCXXABI(*this)), genTypes{*this},
       VTables{*this}, openMPRuntime(new CIRGenOpenMPRuntime(*this)) {
@@ -2765,7 +2766,7 @@ void CIRGenModule::buildDeferred(unsigned recursionLimit) {
   recursionLimit--;
 
   for (auto &D : CurDeclsToEmit) {
-    if (getCodeGenOpts().ClangIRSkipFunctionsFromSystemHeaders) {
+    if (getCIROptions().ClangIRSkipFunctionsFromSystemHeaders) {
       auto *decl = D.getDecl();
       assert(decl && "expected decl");
       if (astCtx.getSourceManager().isInSystemHeader(decl->getLocation()))
@@ -2823,7 +2824,7 @@ CIRGenModule::GetAddrOfGlobal(GlobalDecl GD, ForDefinition_t IsForDefinition) {
 }
 
 void CIRGenModule::Release() {
-  buildDeferred(getCodeGenOpts().ClangIRBuildDeferredThreshold);
+  buildDeferred(getCIROptions().ClangIRBuildDeferredThreshold);
   // TODO: buildVTablesOpportunistically();
   // TODO: applyGlobalValReplacements();
   applyReplacements();

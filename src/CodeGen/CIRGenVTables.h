@@ -19,7 +19,7 @@
 #include "clang/AST/GlobalDecl.h"
 #include "clang/AST/VTableBuilder.h"
 #include "clang/Basic/ABI.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "llvm/ADT/DenseMap.h"
 
 namespace clang {

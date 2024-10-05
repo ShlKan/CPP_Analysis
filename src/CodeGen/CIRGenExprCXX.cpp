@@ -10,12 +10,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/MissingFeatures.h"
-#include <CIRGenCXXABI.h>
-#include <CIRGenFunction.h>
-#include <CIRGenModule.h>
-#include <CIRGenValue.h>
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/MissingFeatures.h"
+#include "CIRGenCXXABI.h"
+#include "CIRGenFunction.h"
+#include "CIRGenModule.h"
+#include "CIRGenValue.h"
 
 #include <clang/AST/DeclCXX.h>
 

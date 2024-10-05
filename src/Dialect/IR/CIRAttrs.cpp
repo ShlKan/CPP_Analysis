@@ -10,10 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Dialect/IR/CIROpsEnums.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIROpsEnums.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
 
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/IR/Attributes.h"
@@ -50,7 +50,7 @@ static mlir::ParseResult parseConstPtr(mlir::AsmParser &parser,
 static void printConstPtr(mlir::AsmPrinter &p, mlir::IntegerAttr value);
 
 #define GET_ATTRDEF_CLASSES
-#include "clang/CIR/Dialect/IR/CIROpsAttributes.cpp.inc"
+#include "CIR/Dialect/IR/CIROpsAttributes.cpp.inc"
 
 using namespace mlir;
 using namespace mlir::cir;
@@ -683,6 +683,6 @@ AddressSpaceAttr::getValueFromLangAS(clang::LangAS langAS) {
 void CIRDialect::registerAttributes() {
   addAttributes<
 #define GET_ATTRDEF_LIST
-#include "clang/CIR/Dialect/IR/CIROpsAttributes.cpp.inc"
+#include "CIR/Dialect/IR/CIROpsAttributes.cpp.inc"
       >();
 }

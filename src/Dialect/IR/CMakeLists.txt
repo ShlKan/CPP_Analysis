@@ -8,10 +8,10 @@ add_clang_library(MLIRCIR
   FPEnv.cpp
 
   DEPENDS
-  MLIRBuiltinLocationAttributesIncGen
+  #MLIRBuiltinLocationAttributesIncGen
   MLIRCIROpsIncGen
   MLIRCIREnumsGen
-  MLIRSymbolInterfacesIncGen
+  #MLIRSymbolInterfacesIncGen
   MLIRCIRASTAttrInterfacesIncGen
   MLIRCIROpInterfacesIncGen
   MLIRCIRLoopOpInterfaceIncGen

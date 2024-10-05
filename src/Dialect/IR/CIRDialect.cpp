@@ -10,12 +10,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIROpsEnums.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/Interfaces/CIRLoopOpInterface.h"
 #include "clang/AST/Attrs.inc"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/Dialect/IR/CIROpsEnums.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/Interfaces/CIRLoopOpInterface.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <numeric>
 #include <optional>
@@ -43,12 +43,12 @@
 using namespace mlir;
 using namespace mlir::cir;
 
-#include "clang/CIR/Dialect/IR/CIROpsEnums.cpp.inc"
-#include "clang/CIR/Dialect/IR/CIROpsStructs.cpp.inc"
+#include "CIR/Dialect/IR/CIROpsEnums.cpp.inc"
+#include "CIR/Dialect/IR/CIROpsStructs.cpp.inc"
 
-#include "clang/CIR/Dialect/IR/CIROpsDialect.cpp.inc"
-#include "clang/CIR/Interfaces/ASTAttrInterfaces.h"
-#include "clang/CIR/Interfaces/CIROpInterfaces.h"
+#include "CIR/Dialect/IR/CIROpsDialect.cpp.inc"
+#include "CIR/Interfaces/ASTAttrInterfaces.h"
+#include "CIR/Interfaces/CIROpInterfaces.h"
 
 //===----------------------------------------------------------------------===//
 // CIR Dialect
@@ -119,7 +119,7 @@ void cir::CIRDialect::initialize() {
   registerAttributes();
   addOperations<
 #define GET_OP_LIST
-#include "clang/CIR/Dialect/IR/CIROps.cpp.inc"
+#include "CIR/Dialect/IR/CIROps.cpp.inc"
       >();
   addInterfaces<CIROpAsmDialectInterface>();
 }
@@ -3909,4 +3909,4 @@ LogicalResult cir::CatchParamOp::verify() {
 //===----------------------------------------------------------------------===//
 
 #define GET_OP_CLASSES
-#include "clang/CIR/Dialect/IR/CIROps.cpp.inc"
+#include "CIR/Dialect/IR/CIROps.cpp.inc"

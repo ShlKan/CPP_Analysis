@@ -1,6 +1,6 @@
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/Dialect/IR/CIRDataLayout.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/MissingFeatures.h"
 
 using namespace cir;
 
@@ -119,8 +119,8 @@ void CIRDataLayout::reset() {
   bigEndian = false;
   // ManglingMode = MM_None;
   // NonIntegralAddressSpaces.clear();
-  StructAlignment =
-      llvm::LayoutAlignElem::get(llvm::Align(1), llvm::Align(8), 0);
+  //** StructAlignment =
+  //** llvm::LayoutAlignElem::get(llvm::Align(1), llvm::Align(8), 0);
 
   // NOTE(cir): Alignment setter functions are skipped as these should already
   // be set in MLIR's data layout.
@@ -173,9 +173,9 @@ llvm::Align CIRDataLayout::getAlignment(mlir::Type Ty, bool abiOrPref) const {
     // Get the layout annotation... which is lazily created on demand.
     const StructLayout *Layout =
         getStructLayout(llvm::cast<mlir::cir::StructType>(Ty));
-    const llvm::Align Align =
-        abiOrPref ? StructAlignment.ABIAlign : StructAlignment.PrefAlign;
-    return std::max(Align, Layout->getAlignment());
+    //**const llvm::Align Align =
+    //**abiOrPref ? StructAlignment.ABIAlign : StructAlignment.PrefAlign;
+    return Layout->getAlignment(); //** std::max(Align, Layout->getAlignment());
   }
 
   // FIXME(cir): This does not account for differnt address spaces, and relies

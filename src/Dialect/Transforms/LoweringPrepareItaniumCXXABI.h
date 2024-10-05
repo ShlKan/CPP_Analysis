@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "CIR/Dialect/IR/CIRDataLayout.h"
 #include "LoweringPrepareCXXABI.h"
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
 
 class LoweringPrepareItaniumCXXABI : public cir::LoweringPrepareCXXABI {
 public:

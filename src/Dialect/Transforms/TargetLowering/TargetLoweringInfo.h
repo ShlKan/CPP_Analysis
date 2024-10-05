@@ -18,7 +18,7 @@
 #include "ABIInfo.h"
 #include <memory>
 
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRAttrs.h"
 
 namespace mlir {
 namespace cir {

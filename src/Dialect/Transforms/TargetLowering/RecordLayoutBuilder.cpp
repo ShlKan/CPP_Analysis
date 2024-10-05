@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/MissingFeatures.h"
 #include "CIRLowerContext.h"
 #include "CIRRecordLayout.h"
 #include "mlir/IR/Types.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/MissingFeatures.h"
 
 using namespace mlir;
 using namespace mlir::cir;

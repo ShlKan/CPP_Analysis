@@ -17,9 +17,9 @@
 #include "mlir/IR/Types.h"
 #include "clang/AST/CharUnits.h"
 #include "clang/Basic/AddressSpaces.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/MissingFeatures.h"
 
 namespace cir {
 

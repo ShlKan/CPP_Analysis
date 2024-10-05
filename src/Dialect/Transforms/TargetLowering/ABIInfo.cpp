@@ -12,10 +12,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "ABIInfo.h"
+#include "CIR/Dialect/IR/CIRDataLayout.h"
 #include "CIRCXXABI.h"
 #include "CIRLowerContext.h"
 #include "LowerTypes.h"
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
 
 namespace mlir {
 namespace cir {

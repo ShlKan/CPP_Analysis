@@ -3,7 +3,7 @@
 
 #include "CIRGenFunction.h"
 #include "TargetInfo.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/MissingFeatures.h"
 
 using namespace cir;
 using namespace clang;

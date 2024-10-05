@@ -3,9 +3,9 @@
 #include "LowerFunctionInfo.h"
 #include "LowerModule.h"
 #include "LowerTypes.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/FnInfoOpts.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/FnInfoOpts.h"
+#include "CIR/MissingFeatures.h"
 #include "llvm/Support/ErrorHandling.h"
 
 using namespace mlir;

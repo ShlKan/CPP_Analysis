@@ -18,7 +18,7 @@
 
 #include "clang/AST/Redeclarable.h"
 #include "clang/Basic/OpenMPKinds.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 
 #include "llvm/Support/ErrorHandling.h"
 
@@ -26,7 +26,7 @@
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/Location.h"
 
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/MissingFeatures.h"
 
 namespace clang {
 class Decl;

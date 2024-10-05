@@ -2,8 +2,8 @@
 #include "CIRGenCstEmitter.h"
 #include "CIRGenFunction.h"
 #include "clang/Basic/LangOptions.h"
-#include "clang/CIR/Interfaces/CIRFPTypeInterface.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/Interfaces/CIRFPTypeInterface.h"
+#include "CIR/MissingFeatures.h"
 
 #include "mlir/IR/Location.h"
 #include "mlir/IR/Value.h"

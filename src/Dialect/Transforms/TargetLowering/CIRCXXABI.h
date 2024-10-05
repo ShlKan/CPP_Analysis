@@ -14,11 +14,11 @@
 #ifndef LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_CIRCXXABI_H
 #define LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_CIRCXXABI_H
 
+#include "CIR/Dialect/Builder/CIRBaseBuilder.h"
+#include "CIR/Dialect/IR/CIRDataLayout.h"
+#include "CIR/Target/AArch64.h"
 #include "LowerFunctionInfo.h"
 #include "mlir/IR/Value.h"
-#include "clang/CIR/Dialect/Builder/CIRBaseBuilder.h"
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
-#include "clang/CIR/Target/AArch64.h"
 
 namespace mlir {
 namespace cir {

@@ -6,17 +6,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "TargetLowering/LowerModule.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
 
 #define GEN_PASS_DEF_CALLCONVLOWERING
-#include "clang/CIR/Dialect/Passes.h.inc"
+#include "CIR/Dialect/Passes.h.inc"
 
 namespace mlir {
 namespace cir {

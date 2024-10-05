@@ -14,10 +14,10 @@
 #ifndef LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_ABIINFO_H
 #define LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_ABIINFO_H
 
+#include "CIR/Dialect/IR/CIRDataLayout.h"
 #include "CIRCXXABI.h"
 #include "CIRLowerContext.h"
 #include "LowerFunctionInfo.h"
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
 #include "llvm/IR/CallingConv.h"
 
 namespace mlir {

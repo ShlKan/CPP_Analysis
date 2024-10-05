@@ -12,10 +12,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "ABIInfo.h"
+#include "CIR/MissingFeatures.h"
 #include "CIRCXXABI.h"
 #include "LowerFunction.h"
 #include "LowerFunctionInfo.h"
-#include "clang/CIR/MissingFeatures.h"
 #include "llvm/Support/ErrorHandling.h"
 
 namespace mlir {

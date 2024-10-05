@@ -12,11 +12,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "CIRLowerContext.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/MissingFeatures.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Interfaces/DataLayoutInterfaces.h"
 #include "clang/AST/ASTContext.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/MissingFeatures.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cmath>
 

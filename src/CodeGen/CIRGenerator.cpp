@@ -20,10 +20,10 @@
 #include "mlir/IR/MLIRContext.h"
 #include "mlir/Target/LLVMIR/Import.h"
 
+#include "CIR/CIRGenerator.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
-#include "clang/CIR/CIRGenerator.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
 
 using namespace cir;
 using namespace clang;
@@ -32,8 +32,8 @@ void CIRGenerator::anchor() {}
 
 CIRGenerator::CIRGenerator(clang::DiagnosticsEngine &diags,
                            llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> vfs,
-                           const CodeGenOptions &CGO)
-    : Diags(diags), fs(std::move(vfs)), codeGenOpts{CGO},
+                           const CodeGenOptions &CGO, const CIROptions cirOpts)
+    : Diags(diags), fs(std::move(vfs)), codeGenOpts{CGO}, cirOpts(cirOpts),
       HandlingTopLevelDecls(0) {}
 CIRGenerator::~CIRGenerator() {
   // There should normally not be any leftover inline method definitions.
@@ -61,7 +61,7 @@ void CIRGenerator::Initialize(ASTContext &astCtx) {
   mlirCtx->getOrLoadDialect<mlir::memref::MemRefDialect>();
   mlirCtx->getOrLoadDialect<mlir::omp::OpenMPDialect>();
   CGM = std::make_unique<CIRGenModule>(*mlirCtx.get(), astCtx, codeGenOpts,
-                                       Diags);
+                                       cirOpts, Diags);
   auto mod = CGM->getModule();
   auto layout = llvm::DataLayout(astCtx.getTargetInfo().getDataLayoutString());
   setMLIRDataLayout(mod, layout);

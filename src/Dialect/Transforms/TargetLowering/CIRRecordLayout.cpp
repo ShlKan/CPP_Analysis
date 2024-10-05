@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CIRRecordLayout.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/MissingFeatures.h"
 
 namespace mlir {
 namespace cir {

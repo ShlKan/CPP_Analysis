@@ -9,6 +9,14 @@
 // This file implements lowering of CIR operations to LLVMIR.
 //
 //===----------------------------------------------------------------------===//
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIROpsEnums.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/Dialect/Passes.h"
+#include "CIR/LoweringHelpers.h"
+#include "CIR/MissingFeatures.h"
+#include "CIR/Passes.h"
 #include "LoweringHelpers.h"
 #include "mlir/Conversion/AffineToStandard/AffineToStandard.h"
 #include "mlir/Conversion/ControlFlowToLLVM/ControlFlowToLLVM.h"
@@ -46,14 +54,6 @@
 #include "mlir/Target/LLVMIR/Dialect/OpenMP/OpenMPToLLVMIRTranslation.h"
 #include "mlir/Target/LLVMIR/Export.h"
 #include "mlir/Transforms/DialectConversion.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/Dialect/IR/CIROpsEnums.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/Dialect/Passes.h"
-#include "clang/CIR/LoweringHelpers.h"
-#include "clang/CIR/MissingFeatures.h"
-#include "clang/CIR/Passes.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/STLExtras.h"
@@ -69,7 +69,7 @@
 #include <optional>
 #include <set>
 
-#include "LowerModule.h"
+#include "../Dialect/Transforms/TargetLowering/LowerModule.h"
 
 using namespace cir;
 using namespace llvm;
@@ -3238,8 +3238,8 @@ public:
   }
 };
 
-#define GET_BUILTIN_LOWERING_CLASSES
-#include "clang/CIR/Dialect/IR/CIRBuiltinsLowering.inc"
+// #define GET_BUILTIN_LOWERING_CLASSES
+// #include "clang/CIR/Dialect/IR/CIRBuiltinsLowering.inc"
 
 class CIRUnreachableLowering
     : public mlir::OpConversionPattern<mlir::cir::UnreachableOp> {
@@ -3786,7 +3786,7 @@ void populateCIRToLLVMConversionPatterns(mlir::RewritePatternSet &patterns,
       CIRVAStartLowering, CIRVAEndLowering, CIRVACopyLowering, CIRVAArgLowering,
       CIRBrOpLowering, CIRGetMemberOpLowering, CIRGetRuntimeMemberOpLowering,
       CIRSwitchFlatOpLowering, CIRPtrDiffOpLowering, CIRCopyOpLowering,
-      CIRMemCpyOpLowering, CIRFAbsOpLowering, CIRExpectOpLowering,
+      CIRMemCpyOpLowering, /*CIRFAbsOpLowering,*/ CIRExpectOpLowering,
       CIRVTableAddrPointOpLowering, CIRVectorCreateLowering,
       CIRVectorCmpOpLowering, CIRVectorSplatLowering, CIRVectorTernaryLowering,
       CIRVectorShuffleIntsLowering, CIRVectorShuffleVecLowering,
@@ -3796,9 +3796,9 @@ void populateCIRToLLVMConversionPatterns(mlir::RewritePatternSet &patterns,
       CIRCmpThreeWayOpLowering, CIRClearCacheOpLowering, CIRUndefOpLowering,
       CIREhTypeIdOpLowering, CIRCatchParamOpLowering, CIRResumeOpLowering,
       CIRAllocExceptionOpLowering, CIRThrowOpLowering
-#define GET_BUILTIN_LOWERING_LIST
-#include "clang/CIR/Dialect/IR/CIRBuiltinsLowering.inc"
-#undef GET_BUILTIN_LOWERING_LIST
+      // #define GET_BUILTIN_LOWERING_LIST
+      // #include "clang/CIR/Dialect/IR/CIRBuiltinsLowering.inc"
+      // #undef GET_BUILTIN_LOWERING_LIST
       >(converter, patterns.getContext());
 }
 

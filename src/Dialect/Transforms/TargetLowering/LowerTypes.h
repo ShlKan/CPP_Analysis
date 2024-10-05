@@ -15,14 +15,14 @@
 #define LLVM_CLANG_LIB_CIR_DIALECT_TRANSFORMS_TARGETLOWERING_LOWERTYPES_H
 
 #include "ABIInfo.h"
+#include "CIR/Dialect/IR/CIRDataLayout.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/FnInfoOpts.h"
 #include "CIRCXXABI.h"
 #include "CIRLowerContext.h"
 #include "LowerCall.h"
 #include "mlir/IR/MLIRContext.h"
 #include "clang/Basic/Specifiers.h"
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
-#include "clang/CIR/FnInfoOpts.h"
 
 namespace mlir {
 namespace cir {

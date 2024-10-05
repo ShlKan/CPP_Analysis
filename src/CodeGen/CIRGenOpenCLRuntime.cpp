@@ -15,7 +15,7 @@
 #include "CIRGenOpenCLRuntime.h"
 #include "CIRGenFunction.h"
 
-#include "clang/CIR/Dialect/IR/CIROpsEnums.h"
+#include "CIR/Dialect/IR/CIROpsEnums.h"
 
 using namespace clang;
 using namespace cir;

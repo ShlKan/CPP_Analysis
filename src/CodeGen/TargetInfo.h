@@ -17,7 +17,7 @@
 #include "ABIInfo.h"
 #include "CIRGenValue.h"
 #include "mlir/IR/Types.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRAttrs.h"
 
 #include <memory>
 

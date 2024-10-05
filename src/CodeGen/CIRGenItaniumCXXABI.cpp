@@ -22,12 +22,12 @@
 #include "CIRGenFunctionInfo.h"
 #include "ConstantInitBuilder.h"
 
+#include "CIR/Dialect/IR/CIRAttrs.h"
 #include "clang/AST/GlobalDecl.h"
 #include "clang/AST/Mangle.h"
 #include "clang/AST/VTableBuilder.h"
 #include "clang/Basic/Linkage.h"
 #include "clang/Basic/TargetInfo.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
 #include "llvm/Support/ErrorHandling.h"
 
 using namespace cir;
@@ -371,7 +371,7 @@ CIRGenCXXABI *cir::CreateCIRGenItaniumCXXABI(CIRGenModule &CGM) {
   switch (CGM.getASTContext().getCXXABIKind()) {
   case TargetCXXABI::GenericItanium:
     assert(CGM.getASTContext().getTargetInfo().getTriple().getArch() !=
-               llvm::Triple::le32 &&
+               llvm::Triple::aarch64_32 &&
            "le32 NYI");
     LLVM_FALLTHROUGH;
   case TargetCXXABI::GenericAArch64:

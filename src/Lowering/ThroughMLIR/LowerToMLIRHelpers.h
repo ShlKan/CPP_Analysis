@@ -1,10 +1,10 @@
 #ifndef LLVM_CLANG_LIB_LOWERTOMLIRHELPERS_H
 #define LLVM_CLANG_LIB_LOWERTOMLIRHELPERS_H
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/Transforms/DialectConversion.h"
-#include "clang/CIR/Dialect/IR/CIRDialect.h"
 
 template <typename T>
 mlir::Value getConst(mlir::ConversionPatternRewriter &rewriter,

@@ -12,12 +12,12 @@
 //===----------------------------------------------------------------------===//
 
 #include "LowerTypes.h"
+#include "CIR/ABIArgInfo.h"
+#include "CIR/MissingFeatures.h"
 #include "CIRToCIRArgMapping.h"
 #include "LowerModule.h"
 #include "mlir/IR/Types.h"
 #include "mlir/Support/LLVM.h"
-#include "clang/CIR/ABIArgInfo.h"
-#include "clang/CIR/MissingFeatures.h"
 #include "llvm/Support/ErrorHandling.h"
 
 using namespace ::mlir::cir;

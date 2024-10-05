@@ -21,8 +21,8 @@
 #include "clang/AST/OperationKinds.h"
 #include "clang/AST/RecordLayout.h"
 #include "clang/AST/StmtVisitor.h"
-#include "clang/CIR/Dialect/IR/CIRAttrs.h"
-#include "clang/CIR/MissingFeatures.h"
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/MissingFeatures.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 

@@ -1,14 +1,14 @@
 
-#include "clang/CIR/Target/x86.h"
+#include "CIR/Target/x86.h"
 #include "ABIInfo.h"
 #include "ABIInfoImpl.h"
+#include "CIR/ABIArgInfo.h"
+#include "CIR/Dialect/IR/CIRDataLayout.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/MissingFeatures.h"
 #include "LowerModule.h"
 #include "LowerTypes.h"
 #include "TargetInfo.h"
-#include "clang/CIR/ABIArgInfo.h"
-#include "clang/CIR/Dialect/IR/CIRDataLayout.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/MissingFeatures.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <memory>
 

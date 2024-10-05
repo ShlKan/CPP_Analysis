@@ -6,15 +6,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CIR/Target/AArch64.h"
+#include "CIR/Target/AArch64.h"
 #include "ABIInfoImpl.h"
+#include "CIR/ABIArgInfo.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/MissingFeatures.h"
 #include "LowerFunctionInfo.h"
 #include "LowerTypes.h"
 #include "TargetInfo.h"
 #include "TargetLoweringInfo.h"
-#include "clang/CIR/ABIArgInfo.h"
-#include "clang/CIR/Dialect/IR/CIRTypes.h"
-#include "clang/CIR/MissingFeatures.h"
 #include "llvm/Support/ErrorHandling.h"
 
 using AArch64ABIKind = ::cir::AArch64ABIKind;

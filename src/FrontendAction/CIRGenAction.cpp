@@ -12,7 +12,7 @@
 #include "CIR/Dialect/IR/CIRDialect.h"
 #include "CIR/LowerToLLVM.h"
 #include "CIR/Passes.h"
-#include "CIROptions.h"
+#include "CPPFrontend/CIROptions.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/IR/BuiltinOps.h"
@@ -375,13 +375,10 @@ CIRGenAction::CreateASTConsumer(CompilerInstance &ci, StringRef inputFile) {
   if (!out)
     out = getOutputStream(ci, inputFile, action);
 
-  // FIX: This needs to obtain from other places.
-  CIROptions cirOptions;
-
   auto Result = std::make_unique<cir::CIRGenConsumer>(
       action, ci.getDiagnostics(), &ci.getVirtualFileSystem(),
       ci.getHeaderSearchOpts(), ci.getCodeGenOpts(), ci.getTargetOpts(),
-      ci.getLangOpts(), ci.getFrontendOpts(), cirOptions, std::move(out));
+      ci.getLangOpts(), ci.getFrontendOpts(), *cirOption.get(), std::move(out));
   cgConsumer = Result.get();
 
   // Enable generating macro debug info only when debug info is not disabled and

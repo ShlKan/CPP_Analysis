@@ -11,8 +11,13 @@ include_directories(include)
 add_subdirectory(include)
 include_directories(${CMAKE_BINARY_DIR}/src/include)
 
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+
 add_subdirectory(Dialect)
 add_subdirectory(CodeGen)
 add_subdirectory(FrontendAction)
 add_subdirectory(Lowering)
 add_subdirectory(Interfaces)
+add_subdirectory(CPPFrontend)
+add_subdirectory(Driver)
+

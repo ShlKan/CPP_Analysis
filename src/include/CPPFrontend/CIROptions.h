@@ -2,8 +2,11 @@
 #ifndef LLVM_CLANG_CIR_CIROPTIONS_H
 #define LLVM_CLANG_CIR_CIROPTIONS_H
 
+#include <clang/Frontend/CompilerInstance.h>
+
 #include <string>
 
+namespace cir {
 class CIROptions {
 public:
   /// Use Clang IR pipeline to emit code
@@ -47,5 +50,10 @@ public:
   std::string ClangIRIdiomRecognizerOpts;
   std::string ClangIRLibOptOpts;
 };
+
+bool ExecuteCompilerInvocation(clang::CompilerInstance *compilerInstance,
+                               std::unique_ptr<cir::CIROptions> &cirOpts);
+
+} // namespace cir
 
 #endif

@@ -36,7 +36,7 @@
 #include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/SmallPtrSet.h"
 
-#include "../FrontendAction/CIROptions.h"
+#include "CPPFrontend/CIROptions.h"
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/Builders.h"

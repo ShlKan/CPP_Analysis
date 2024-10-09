@@ -10,6 +10,7 @@
 #define LLVM_CLANG_CIR_CIRGENACTION_H
 
 #include "clang/Frontend/FrontendAction.h"
+#include <CPPFrontend/CIROptions.h>
 #include <memory>
 
 namespace llvm {
@@ -52,6 +53,9 @@ private:
 
   mlir::OwningOpRef<mlir::ModuleOp> loadModule(llvm::MemoryBufferRef mbRef);
 
+  // CIR Options.
+  std::unique_ptr<cir::CIROptions> cirOption;
+
 protected:
   CIRGenAction(OutputType action, mlir::MLIRContext *_MLIRContext = nullptr);
 
@@ -65,6 +69,10 @@ protected:
 
 public:
   ~CIRGenAction() override;
+
+  void setCIROption(std::unique_ptr<cir::CIROptions> cirOption) {
+    cirOption = std::move(cirOption);
+  }
 
   bool hasCIRSupport() const { return true; }
 

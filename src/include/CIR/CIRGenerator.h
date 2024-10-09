@@ -22,7 +22,7 @@
 #include "llvm/Support/ToolOutputFile.h"
 #include "llvm/Support/VirtualFileSystem.h"
 
-#include "../FrontendAction/CIROptions.h"
+#include "CPPFrontend/CIROptions.h"
 
 #include <memory>
 

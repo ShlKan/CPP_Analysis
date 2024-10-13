@@ -21,7 +21,8 @@ int main(int argc, char **argv) {
       cirOpts->UseClangIRPipeline = 1;
   }
 
-  llvm::ArrayRef<const char *> Argv(argv, argc);
+  llvm::SmallVector<const char *, 256> Args(argv, argv + argc);
+  auto Argv = llvm::ArrayRef(Args).slice(1);
 
   std::unique_ptr<clang::CompilerInstance> Clang(new clang::CompilerInstance());
   clang::IntrusiveRefCntPtr<clang::DiagnosticIDs> DiagID(

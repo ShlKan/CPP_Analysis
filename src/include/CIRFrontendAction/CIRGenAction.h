@@ -70,8 +70,8 @@ protected:
 public:
   ~CIRGenAction() override;
 
-  void setCIROption(std::unique_ptr<cir::CIROptions> cirOption) {
-    cirOption = std::move(cirOption);
+  void setCIROption(std::unique_ptr<cir::CIROptions> cirOpt) {
+    cirOption = std::move(cirOpt);
   }
 
   bool hasCIRSupport() const { return true; }

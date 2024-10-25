@@ -28,6 +28,11 @@ mlir_tablegen(CIROpsAttributes.h.inc -gen-attrdef-decls)
 mlir_tablegen(CIROpsAttributes.cpp.inc -gen-attrdef-defs)
 add_public_tablegen_target(MLIRCIREnumsGen)
 
+set(LLVM_TARGET_DEFINITIONS SMDialect.td)
+mlir_tablegen(SMOpsDialect.h.inc -gen-dialect-decls)
+mlir_tablegen(SMOpsDialect.cpp.inc -gen-dialect-defs)
+add_public_tablegen_target(MLIRSMOpsIncGen)
+
 clang_tablegen(CIRBuiltinsLowering.inc -gen-cir-builtins-lowering
                SOURCE CIROps.td
                TARGET CIRBuiltinsLowering)

@@ -48,6 +48,7 @@ add_clang_library(clangCIR
   DEPENDS
   MLIRCIR
   MLIRCIROpsIncGen
+  MLIRSMOpsIncGen
   MLIRCIRASTAttrInterfacesIncGen
   MLIRCIROpInterfacesIncGen
   MLIRCIRLoopOpInterfaceIncGen

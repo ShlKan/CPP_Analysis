@@ -5,8 +5,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _SYSTEMC_SMDIALECT_H
-#define _SYSTEMC_SMDIALECT_H
+#ifndef _SYSTEM_SMDIALECT_H
+#define _SYSTEM_SMDIALECT_H
 
 include "mlir/IR/OpBase.td"
 

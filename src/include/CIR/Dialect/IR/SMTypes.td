@@ -30,7 +30,7 @@ def SM_IntType : SM_Type<"SInt", "s_int",
     [DeclareTypeInterfaceMethods<DataLayoutTypeInterface>]> {
   let summary = "System integer type with arbitrary precision up to a fixed limit";
 
-  let description = "SInt is different from C++ builtin integers. "
+  let description = "SInt is different from C++ builtin integer types. "
                     "Especially for the treatment of overflow."
                     "For example, if x + y (x and y are unsigned integers) is overflow then "
                     "C++ builtin integers will wrap round the result. But SInt will extend one bit"
@@ -49,28 +49,20 @@ def SM_IntType : SM_Type<"SInt", "s_int",
   let genVerifyDecl = 1;
 }
 
-//System Unsigned integer.
-class SysUInt<int width>
+def SysUIntType
   : Type <And<[
       CPred<"::mlir::isa<::mlir::sm::SIntType>($_self)">,
       CPred<"::mlir::cast<::mlir::sm::SIntType>($_self).isUnsigned()">,
-      CPred<"::mlir::cast<::mlir::sm::SIntType>($_self).getWidth() == " # width>
-    ]>, width # "-bit unsigend system integer", "::mlir::sm::SInt">,
-    BuildableType<"::mlir::sm::SIntType::get($_builder.getContext(), " # width # " /*isSigned=*/false)"> {
-  int bitwidth = width;
-}
+      CPred<"::mlir::cast<::mlir::sm::SIntType>($_self).getWidth() > 0">
+    ]>, "Unsigend system integer",  "::mlir::sm::SIntType">;
 
 //System Signed integer.
-class SysSInt<int width>
+def SysSIntType
   : Type <And<[
       CPred<"::mlir::isa<::mlir::sm::SIntType>($_self)">,
       CPred<"::mlir::cast<::mlir::sm::SIntType>($_self).isSigned()">,
-      CPred<"::mlir::cast<::mlir::sm::SIntType>($_self).getWidth() == " # width>
-    ]>, width # "-bit unsigend system integer", "::mlir::sm::SInt">,
-    BuildableType<"::mlir::sm::SIntType::get($_builder.getContext(), " # width # " /*isSigned=*/false)"> {
-  int bitwidth = width;
-}
-
+      CPred<"::mlir::cast<::mlir::sm::SIntType>($_self).getWidth() > 0 " >
+    ]>, "Sigend system integer", "::mlir::sm::SIntType">;
 
 #endif
 

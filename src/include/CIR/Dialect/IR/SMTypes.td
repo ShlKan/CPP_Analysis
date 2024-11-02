@@ -64,5 +64,26 @@ def SysSIntType
       CPred<"::mlir::cast<::mlir::sm::SIntType>($_self).getWidth() > 0 " >
     ]>, "Sigend system integer", "::mlir::sm::SIntType">;
 
+
+def SysProcType : SM_Type<"SInt", "s_int"> {
+  let summary = "The type of system process";
+  let description = [{
+    This is type of system processes.
+    System processes contain only input parameters and always return void.
+  }];
+
+  let parameters = (ins ArrayRefParameter<"Type">:$inputs);
+
+  let assemblyFormat = [{
+    `P` ` ` `(` custom<ProcArgs>($inputs) `)`
+  }];
+
+  let builders = [
+    TypeBuilder<(ins "ArrayRef<Type>":$inputs), [{
+      return $_get($_ctxt, inputs);
+    }]>
+  ];
+}
+
 #endif
 

@@ -14,7 +14,7 @@ include "CIR/Dialect/IR/SMDialect.td"
 class SysOP<string mnemoic, list<Trait> traits=[]> :
     Op<SM_Dialect, mnemoic, traits>;
 
-def SysProcessOP : SysOP<"SysProcess"> {
+def ProcDefOP : SysOP<"ProcDef"> {
     let summary = "Define a process.";
     
     let description = [{
@@ -28,14 +28,29 @@ def SysProcessOP : SysOP<"SysProcess"> {
         OptionalAttr<DictArrayAttr>:$arg_attrs
     );
 
+    let results = (outs SysProcType:$result);
+
     let regions = (region AnyRegion:$body);
     let builders = [OpBuilder<(ins 
         "StringRef":$name, 
         "SysProcType":$type,
+        //CArg wraps a type and its default value
         CArg<"ArrayRef<DictionaryAttr>", "{}">:$argAttrs)>];
 
   let hasCustomAssemblyFormat = 1;
   let skipDefaultBuilders = 1;
+}
+
+def ProcRegisterOP : SysOP<"ProcRegister"> {
+    let summary = "Register a process into the system";
+    let description = [{
+        With the definition of processes, we also need to register these processes 
+        into the system. When the system starts, all registered processes will start to 
+        run in parallel.
+    }];
+
+    let arguments = (ins SysProcType:$procs, Variadic<SM_AnyType>:$args);
+    let hasCustomAssemblyFormat = 1;
 }
 
 

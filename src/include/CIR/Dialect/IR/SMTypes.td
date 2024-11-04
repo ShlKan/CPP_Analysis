@@ -85,5 +85,9 @@ def SysProcType : SM_Type<"SInt", "s_int"> {
   ];
 }
 
+def SM_AnyType : AnyTypeOf<[
+  SM_IntType
+]>;
+
 #endif
 

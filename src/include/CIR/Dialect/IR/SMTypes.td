@@ -65,7 +65,7 @@ def SysSIntType
     ]>, "Sigend system integer", "::mlir::sm::SIntType">;
 
 
-def SysProcType : SM_Type<"SInt", "s_int"> {
+def SysProcType : SM_Type<"SProcess", "s_int"> {
   let summary = "The type of system process";
   let description = [{
     This is type of system processes.
@@ -77,12 +77,6 @@ def SysProcType : SM_Type<"SInt", "s_int"> {
   let assemblyFormat = [{
     `P` ` ` `(` custom<ProcArgs>($inputs) `)`
   }];
-
-  let builders = [
-    TypeBuilder<(ins "ArrayRef<Type>":$inputs), [{
-      return $_get($_ctxt, inputs);
-    }]>
-  ];
 }
 
 def SM_AnyType : AnyTypeOf<[

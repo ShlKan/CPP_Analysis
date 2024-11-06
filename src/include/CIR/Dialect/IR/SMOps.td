@@ -33,7 +33,7 @@ def ProcDefOP : SysOP<"ProcDef"> {
     let regions = (region AnyRegion:$body);
     let builders = [OpBuilder<(ins 
         "StringRef":$name, 
-        "SysProcType":$type,
+        "SProcessType":$type,
         //CArg wraps a type and its default value
         CArg<"ArrayRef<DictionaryAttr>", "{}">:$argAttrs)>];
 

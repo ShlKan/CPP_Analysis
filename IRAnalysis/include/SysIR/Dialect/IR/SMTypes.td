@@ -8,7 +8,7 @@
 #ifndef _SYSMTEM_SMTYPE_H
 #define _SYSMTEM_SMTYPE_H
 
-include "CIR/Dialect/IR/SMDialect.td"
+include "SysIR/Dialect/IR/SMDialect.td"
 include "mlir/IR/AttrTypeBase.td"
 include "mlir/IR/EnumAttr.td"
 include "mlir/Interfaces/DataLayoutInterfaces.td"

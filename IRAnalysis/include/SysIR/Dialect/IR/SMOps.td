@@ -8,8 +8,8 @@
 #ifndef _SYSMTEM_SMOPS_H
 #define _SYSMTEM_SMOPS_H
 
-include "CIR/Dialect/IR/SMTypes.td"
-include "CIR/Dialect/IR/SMDialect.td"
+include "SysIR/Dialect/IR/SMTypes.td"
+include "SySIR/Dialect/IR/SMDialect.td"
 
 class SysOP<string mnemoic, list<Trait> traits=[]> :
     Op<SM_Dialect, mnemoic, traits>;

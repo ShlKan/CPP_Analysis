@@ -1,0 +1,8 @@
+set(LLVM_TARGET_DEFINITIONS SMOps.td)
+mlir_tablegen(SMOps.h.inc -gen-op-decls)
+mlir_tablegen(SMOps.cpp.inc -gen-op-defs)
+mlir_tablegen(SMOpsTypes.h.inc -gen-typedef-decls)
+mlir_tablegen(SMOpsTypes.cpp.inc -gen-typedef-defs)
+mlir_tablegen(SMOpsDialect.h.inc -gen-dialect-decls)
+mlir_tablegen(SMOpsDialect.cpp.inc -gen-dialect-defs)
+add_public_tablegen_target(MLIRSMOpsIncGen)

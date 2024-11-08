@@ -9,7 +9,7 @@ endif()
 
 include_directories(include)
 add_subdirectory(include)
-include_directories(${CMAKE_BINARY_DIR}/src/include)
+include_directories(${CMAKE_BINARY_DIR}/IRAnalysis/include)
 
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 

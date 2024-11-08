@@ -11,4 +11,11 @@
 
 using namespace ::mlir::sys;
 
-void SIntType::print(::mlir::AsmPrinter &printer) const {}
+void SIntType::print(::mlir::AsmPrinter &odsPrinter) const {
+  if (getIsSigned())
+    odsPrinter << "SInt<";
+  else
+    odsPrinter << "UInt<";
+  odsPrinter << this->getWidth();
+  odsPrinter << ">";
+}

@@ -9,10 +9,10 @@
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/SymbolTable.h"
 
-#include "SysIR/Dialect/IR/SMOpsDialect.h.inc"
-#include "SysIR/Dialect/IR/SMTypes.h"
+#include "SysIR/Dialect/IR/SysOpsDialect.h.inc"
+#include "SysIR/Dialect/IR/SysTypes.h"
 
 #define GET_OP_CLASSES
-#include "SysIR/Dialect/IR/SMOps.h.inc"
+#include "SysIR/Dialect/IR/SysOps.h.inc"
 
 #endif

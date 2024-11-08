@@ -10,6 +10,6 @@
 #include "mlir/Interfaces/DataLayoutInterfaces.h"
 
 #define GET_TYPEDEF_CLASSES
-#include "SysIR/Dialect/IR/SMOpsTypes.h.inc"
+#include "SysIR/Dialect/IR/SysOpsTypes.h.inc"
 
 #endif

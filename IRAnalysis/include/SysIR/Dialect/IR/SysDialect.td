@@ -5,18 +5,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _SYSTEM_SMDIALECT_H
-#define _SYSTEM_SMDIALECT_H
+#ifndef _SYSTEM_SYSDIALECT_H
+#define _SYSTEM_SYSDIALECT_H
 
 include "mlir/IR/OpBase.td"
 
-def SM_Dialect : Dialect {
-    let name = "sm";
+def Sys_Dialect : Dialect {
+    let name = "sys";
 
     let summary = "A high-level dialect for supporting system models' "
                   "code generation and optimization";
 
-    let cppNamespace = "::mlir::sm";
+    let cppNamespace = "::mlir::sys";
 
     let extraClassDeclaration = [{
 

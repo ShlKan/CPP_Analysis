@@ -1,18 +1,18 @@
 //===----------------------------------------------------------------------===//
 //
 // Created by Shuanglong Kan, 25.10.2024
-// This file declares the SM dialect types.
+// This file declares the Sys dialect types.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _SYSMTEM_SMOPS_H
-#define _SYSMTEM_SMOPS_H
+#ifndef _SYSMTEM_SYSOPS_H
+#define _SYSMTEM_SYSOPS_H
 
-include "SysIR/Dialect/IR/SMTypes.td"
-include "SySIR/Dialect/IR/SMDialect.td"
+include "SysIR/Dialect/IR/SysTypes.td"
+include "SySIR/Dialect/IR/SysDialect.td"
 
 class SysOP<string mnemoic, list<Trait> traits=[]> :
-    Op<SM_Dialect, mnemoic, traits>;
+    Op<Sys_Dialect, mnemoic, traits>;
 
 def ProcDefOP : SysOP<"ProcDef"> {
     let summary = "Define a process.";
@@ -49,7 +49,7 @@ def ProcRegisterOP : SysOP<"ProcRegister"> {
         run in parallel.
     }];
 
-    let arguments = (ins SysProcType:$procs, Variadic<SM_AnyType>:$args);
+    let arguments = (ins SysProcType:$procs, Variadic<Sys_AnyType>:$args);
     let hasCustomAssemblyFormat = 1;
 }
 

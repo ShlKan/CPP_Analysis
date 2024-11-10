@@ -9,6 +9,9 @@
 namespace cir {
 class CIROptions {
 public:
+  /// Use Sys IR pipeline to emit code
+  unsigned SysIRPipeline : 1;
+
   /// Use Clang IR pipeline to emit code
   unsigned UseClangIRPipeline : 1;
 

@@ -49,20 +49,30 @@ def Sys_IntType : Sys_Type<"SInt", "s_int",
   let genVerifyDecl = 1;
 }
 
-def SysUIntType
+class SysUIntType<int width>
   : Type <And<[
       CPred<"::mlir::isa<::mlir::sys::SIntType>($_self)">,
       CPred<"::mlir::cast<::mlir::sys::SIntType>($_self).isUnsigned()">,
       CPred<"::mlir::cast<::mlir::sys::SIntType>($_self).getWidth() > 0">
-    ]>, "Unsigend system integer",  "::mlir::sys::SIntType">;
+    ]>, "Unsigend system integer",  "::mlir::sys::SIntType">,
+    BuildableType<
+      "mlir::sys::SIntType::get($_builder.getContext(), "
+      # width # ", /*isSigned=*/false)"> {
+  int bitwidth = width;
+}
 
 //System Signed integer.
-def SysSIntType
+class SysSIntType<int width>
   : Type <And<[
       CPred<"::mlir::isa<::mlir::sys::SIntType>($_self)">,
       CPred<"::mlir::cast<::mlir::sys::SIntType>($_self).isSigned()">,
       CPred<"::mlir::cast<::mlir::sys::SIntType>($_self).getWidth() > 0 " >
-    ]>, "Sigend system integer", "::mlir::sys::SIntType">;
+    ]>, "Sigend system integer", "::mlir::sys::SIntType">,
+    BuildableType<
+      "mlir::sys::SIntType::get($_builder.getContext(), "
+      # width # ", /*isSigned=*/true)"> {
+  int bitwidth = width;
+}
 
 
 def SysProcType : Sys_Type<"SProcess", "s_int"> {
@@ -77,6 +87,8 @@ def SysProcType : Sys_Type<"SProcess", "s_int"> {
   let assemblyFormat = [{
     `P` ` ` `(` custom<ProcArgs>($inputs) `)`
   }];
+
+ 
 }
 
 def Sys_AnyType : AnyTypeOf<[

@@ -40,6 +40,7 @@ add_clang_library(clangCIR
   CIRGenTypes.cpp
   CIRGenVTables.cpp
   CIRGenerator.cpp
+  SysIRGenerator.cpp
   CIRPasses.cpp
   CIRRecordLayoutBuilder.cpp
   ConstantInitBuilder.cpp
@@ -47,6 +48,7 @@ add_clang_library(clangCIR
 
   DEPENDS
   MLIRCIR
+  MLIRSYSIR
   MLIRCIROpsIncGen
   MLIRSysOpsIncGen
   MLIRCIRASTAttrInterfacesIncGen

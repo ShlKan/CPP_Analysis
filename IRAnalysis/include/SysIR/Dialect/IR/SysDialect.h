@@ -6,6 +6,7 @@
 #define MLIR_SYSTEM_MODELING_DIALECT_
 
 #include "mlir/Bytecode/BytecodeOpInterface.h"
+#include "mlir/IR/Builders.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/SymbolTable.h"
 

@@ -4,17 +4,18 @@
 #ifndef MLIR_SYS_GEN_ACTION_H
 #define MLIR_SYS_GEN_ACTION_H
 
+#include <SysIR/SysIRGenerator.h>
+
 #include "clang/AST/ASTConsumer.h"
+#include "clang/AST/ASTContext.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "llvm/ADT/StringRef.h"
 #include <clang/Frontend/FrontendAction.h>
 
-#include <SysIR/SysIRGenerator.h>
-
 #include <memory>
 
 namespace sys {
-class SysIRGenConsumer;
+class SysGenConsumer;
 
 class SysGenAction : public clang::ASTFrontendAction {
 
@@ -34,7 +35,7 @@ protected:
 public:
   ~SysGenAction();
 
-  SysIRGenConsumer *sysConsumer;
+  SysGenConsumer *sysConsumer;
   OutputType action;
 };
 

@@ -5,11 +5,13 @@
 
 #include <SysIR/SysIRGenerator.h>
 #include <SysIRFrontendAction/SysGenAction.h>
+#include <iostream>
 
 #include <memory>
 
 using namespace sys;
 
+namespace sys {
 class SysGenConsumer : public clang ::ASTConsumer {
 
 private:
@@ -31,6 +33,15 @@ public:
 
   void HandleTranslationUnit(clang::ASTContext &ctx) override {
     // TODO
+    // for (auto decl = ctx.getTranslationUnitDecl()->decls_begin();
+    //     decl != ctx.getTranslationUnitDecl()->decls_end(); decl++) {
+    // decl->dumpColor();
+    //}
+  }
+
+  void SysTranslation(clang::CompilerInstance &CI) {
+    // Use a code completion consumer?
+    HandleTranslationUnit(CI.getASTContext());
   }
 };
 
@@ -42,16 +53,18 @@ SysGenAction::~SysGenAction() {
 std::unique_ptr<clang::ASTConsumer>
 SysGenAction::CreateASTConsumer(clang::CompilerInstance &ci,
                                 llvm::StringRef InFile) {
-  return std::make_unique<SysGenConsumer>(action, ci.getDiagnostics());
+  auto result = std::make_unique<SysGenConsumer>(action, ci.getDiagnostics());
+  sysConsumer = result.get();
+  result->Initialize(ci.getASTContext());
+  return std::move(result);
 }
 
-void SysGenAction::ExecuteAction() {
-  // TODO
-}
+void SysGenAction::ExecuteAction() { this->ASTFrontendAction::ExecuteAction(); }
 
 void SysGenAction::EndSourceFileAction() {
   // TODO
 }
 
-EmitSysGenAction::EmitSysGenAction(mlir::MLIRContext *_MLIRContext)
+EmitSysGenAction::EmitSysGenAction(mlir::MLIRContext *mlirCtx)
     : SysGenAction(SysGenAction::OutputType::EmitSySIR) {}
+} // namespace sys

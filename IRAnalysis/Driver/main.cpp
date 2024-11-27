@@ -19,6 +19,9 @@ int main(int argc, char **argv) {
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-cir"))
       cirOpts->UseClangIRPipeline = 1;
+    if (!strcmp(argv[i], "-sysir")) {
+      cirOpts->SysIRPipeline = 1;
+    }
   }
 
   llvm::SmallVector<const char *, 256> Args(argv, argv + argc);

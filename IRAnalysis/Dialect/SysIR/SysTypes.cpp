@@ -41,6 +41,15 @@ void SIntType::print(::mlir::AsmPrinter &odsPrinter) const {
   odsPrinter << ">";
 }
 
+mlir::LogicalResult
+SIntType::verify(llvm::function_ref<mlir::InFlightDiagnostic()> emitError,
+                 unsigned width, bool isSigned) {
+
+  // TODO
+
+  return mlir::success();
+}
+
 mlir::ParseResult parseProcArgs(mlir::AsmParser &p,
                                 llvm::SmallVector<mlir::Type> &args) {
   mlir::Type type;
@@ -57,4 +66,35 @@ mlir::ParseResult parseProcArgs(mlir::AsmParser &p,
 
 void printProcArgs(mlir::AsmPrinter &p, llvm::ArrayRef<mlir::Type> args) {
   llvm::interleaveComma(args, p, [&p](mlir::Type type) { p.printType(type); });
+}
+
+//===--------------------------------------------------------------===//
+//                            SysDialect
+//===--------------------------------------------------------------===//
+
+void SysDialect::registerTypes() {
+  addTypes<
+#define GET_TYPEDEF_LIST
+#include "SysIR/Dialect/IR/SysOpsTypes.cpp.inc"
+      >();
+}
+
+//===--------------------------------------------------------------===//
+//                            SIntType
+//===--------------------------------------------------------------===//
+uint64_t SIntType::getABIAlignment(const mlir::DataLayout &dataLayout,
+                                   mlir::DataLayoutEntryListRef params) const {
+  return (uint64_t)(getWidth() / 8);
+}
+
+llvm::TypeSize
+SIntType::getTypeSizeInBits(const mlir::DataLayout &dataLayout,
+                            mlir::DataLayoutEntryListRef params) const {
+  return llvm::TypeSize::getFixed(getWidth());
+}
+
+uint64_t
+SIntType::getPreferredAlignment(const ::mlir::DataLayout &dataLayout,
+                                ::mlir::DataLayoutEntryListRef params) const {
+  return (uint64_t)(getWidth() / 8);
 }

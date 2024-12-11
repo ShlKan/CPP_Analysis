@@ -37,7 +37,7 @@ def ProcDefOP : SysOP<"ProcDef"> {
         //CArg wraps a type and its default value
         CArg<"ArrayRef<DictionaryAttr>", "{}">:$argAttrs)>];
 
-  let hasCustomAssemblyFormat = 1;
+  let assemblyFormat = "$proc_name $body attr-dict `:` type($result)";
   let skipDefaultBuilders = 1;
 }
 
@@ -49,8 +49,8 @@ def ProcRegisterOP : SysOP<"ProcRegister"> {
         run in parallel.
     }];
 
-    let arguments = (ins SysProcType:$procs, Variadic<Sys_AnyType>:$args);
-    let hasCustomAssemblyFormat = 1;
+    let arguments = (ins SysProcType:$proc, Variadic<Sys_AnyType>:$args);
+    let assemblyFormat = "$proc $args attr-dict `:` type($proc) `=``>` type($args)";
 }
 
 

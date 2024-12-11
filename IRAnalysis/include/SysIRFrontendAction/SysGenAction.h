@@ -32,8 +32,15 @@ protected:
   void ExecuteAction() override;
   void EndSourceFileAction() override;
 
+private:
+  // CIR Options.
+  std::unique_ptr<cir::CIROptions> cirOption;
+
 public:
   ~SysGenAction();
+  void setCIROption(std::unique_ptr<cir::CIROptions> cirOpt) {
+    cirOption = std::move(cirOpt);
+  }
 
   SysGenConsumer *sysConsumer;
   OutputType action;

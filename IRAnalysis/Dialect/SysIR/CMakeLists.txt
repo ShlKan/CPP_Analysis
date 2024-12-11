@@ -1,6 +1,8 @@
 
 add_clang_library(MLIRSYSIR
   SysTypes.cpp
+  SysDialect.cpp
+  SysAttrs.cpp
 
   DEPENDS
   MLIRSysOpsIncGen

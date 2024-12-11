@@ -2,8 +2,8 @@
 
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
+#include "clang/AST/DeclGroup.h"
 
-#include <SysIR/SysIRGenerator.h>
 #include <SysIRFrontendAction/SysGenAction.h>
 #include <iostream>
 
@@ -21,9 +21,10 @@ private:
 
 public:
   SysGenConsumer(SysGenAction::OutputType action,
+                 const cir::CIROptions &cirOptions,
                  clang::DiagnosticsEngine &diags)
       : action(action),
-        generator(std::make_unique<sys::SysIRGenerator>(diags)) {}
+        generator(std::make_unique<sys::SysIRGenerator>(cirOptions, diags)) {}
 
   void Initialize(clang::ASTContext &ctx) override {
     // TODO
@@ -31,18 +32,12 @@ public:
     generator->Initialize(ctx);
   }
 
-  void HandleTranslationUnit(clang::ASTContext &ctx) override {
-    // TODO
-    // for (auto decl = ctx.getTranslationUnitDecl()->decls_begin();
-    //     decl != ctx.getTranslationUnitDecl()->decls_end(); decl++) {
-    // decl->dumpColor();
-    //}
+  bool HandleTopLevelDecl(clang::DeclGroupRef D) override {
+    generator->HandleTopLevelDecl(D);
+    return true;
   }
 
-  void SysTranslation(clang::CompilerInstance &CI) {
-    // Use a code completion consumer?
-    HandleTranslationUnit(CI.getASTContext());
-  }
+  void HandleTranslationUnit(clang::ASTContext &ctx) override {}
 };
 
 SysGenAction::SysGenAction(OutputType emitType) : action(emitType) {}
@@ -53,7 +48,8 @@ SysGenAction::~SysGenAction() {
 std::unique_ptr<clang::ASTConsumer>
 SysGenAction::CreateASTConsumer(clang::CompilerInstance &ci,
                                 llvm::StringRef InFile) {
-  auto result = std::make_unique<SysGenConsumer>(action, ci.getDiagnostics());
+  auto result =
+      std::make_unique<SysGenConsumer>(action, *cirOption, ci.getDiagnostics());
   sysConsumer = result.get();
   result->Initialize(ci.getASTContext());
   return std::move(result);

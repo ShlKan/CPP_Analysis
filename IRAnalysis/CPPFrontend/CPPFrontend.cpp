@@ -15,6 +15,7 @@ bool ExecuteCompilerInvocation(clang::CompilerInstance *Clang,
 
   if (cirOpts->SysIRPipeline) {
     auto sysAction = std::make_unique<sys::EmitSysGenAction>();
+    sysAction->setCIROption(std::move(cirOpts));
     if (!sysAction)
       return false;
     bool Success = Clang->ExecuteAction(*sysAction);

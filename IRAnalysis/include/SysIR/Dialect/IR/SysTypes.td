@@ -75,7 +75,7 @@ class SysSIntType<int width>
 }
 
 
-def SysProcType : Sys_Type<"SProcess", "s_int"> {
+def SysProcType : Sys_Type<"SProcess", "s_proc"> {
   let summary = "The type of system process";
   let description = [{
     This is type of system processes.

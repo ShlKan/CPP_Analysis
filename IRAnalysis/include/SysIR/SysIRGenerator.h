@@ -7,6 +7,8 @@
 #include "clang/AST/Decl.h"
 #include "clang/Basic/CodeGenOptions.h"
 
+#include "CPPFrontend/CIROptions.h"
+
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/Support/ToolOutputFile.h"
 #include "llvm/Support/VirtualFileSystem.h"
@@ -28,15 +30,19 @@ class FunctionDecl;
 
 namespace sys {
 
+class SysGenModule;
+
 class SysIRGenerator : public clang::ASTConsumer {
   clang::DiagnosticsEngine &Diags;
   clang::ASTContext *astCtx;
+  const cir::CIROptions cirOpts;
+  std::unique_ptr<SysGenModule> sysMG;
 
 protected:
   std::unique_ptr<mlir::MLIRContext> mlirCtx;
 
 public:
-  SysIRGenerator(clang::DiagnosticsEngine &diags);
+  SysIRGenerator(cir::CIROptions cirOpts, clang::DiagnosticsEngine &diags);
   ~SysIRGenerator();
   void Initialize(clang::ASTContext &Context) override;
 

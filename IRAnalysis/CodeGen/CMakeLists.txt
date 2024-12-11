@@ -41,6 +41,7 @@ add_clang_library(clangCIR
   CIRGenVTables.cpp
   CIRGenerator.cpp
   SysIRGenerator.cpp
+  SysGenModule.cpp
   CIRPasses.cpp
   CIRRecordLayoutBuilder.cpp
   ConstantInitBuilder.cpp
@@ -62,6 +63,7 @@ add_clang_library(clangCIR
   clangLex
   ${dialect_libs}
   MLIRCIR
+  MLIRSYSIR
   MLIRCIRTransforms
   MLIRCIRInterfaces
   MLIRAffineToStandard

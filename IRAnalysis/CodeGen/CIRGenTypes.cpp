@@ -583,8 +583,7 @@ mlir::Type CIRGenTypes::ConvertType(QualType T) {
     llvm_unreachable("NYI");                                                   \
   } break;
 #include "clang/Basic/WebAssemblyReferenceTypes.def"
-#define AMDGPU_OPAQUE_PTR_TYPE(Name, MangledName, AS, Width, Align, Id,        \
-                               SingletonId)                                    \
+#define AMDGPU_OPAQUE_PTR_TYPE(Name, AS, Width, Align, Id, SingletonId)        \
   case BuiltinType::Id:                                                        \
     llvm_unreachable("NYI");
 #include "clang/Basic/AMDGPUTypes.def"

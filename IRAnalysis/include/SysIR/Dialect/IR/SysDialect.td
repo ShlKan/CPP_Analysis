@@ -34,7 +34,7 @@ def Sys_Dialect : Dialect {
 
     }];
 
-} 
+}
 
 #endif //_SYSTEMC_SMDIALECT_H
 

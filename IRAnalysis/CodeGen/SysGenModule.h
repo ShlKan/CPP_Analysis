@@ -6,7 +6,11 @@
 
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/DeclCXX.h"
+#include "clang/AST/Expr.h"
 #include "clang/Basic/Diagnostic.h"
+#include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringRef.h"
+#include <string>
 
 #include "CPPFrontend/CIROptions.h"
 
@@ -31,6 +35,7 @@ private:
   const cir::CIROptions &cirOptions;
   clang::DiagnosticsEngine &diags;
   clang::ASTContext &astCtx;
+  llvm::SmallVector<clang::StringLiteral *, 4> processNames;
 
   mlir::ModuleOp theModule;
   mlir::OpBuilder builder;

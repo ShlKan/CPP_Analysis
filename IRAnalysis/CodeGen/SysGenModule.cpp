@@ -4,6 +4,7 @@
 #include "cir/Dialect/IR/CIROps.h.inc"
 #include "mlir/IR/BuiltinOps.h"
 #include "clang/AST/DeclCXX.h"
+#include "clang/AST/Expr.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/raw_ostream.h"
 
@@ -23,15 +24,23 @@ void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
       auto stmt = method->getBody();
       if (!stmt)
         continue;
-      for (auto childStmt : stmt->children()) {
+      for (const auto &childStmt : stmt->children()) {
         auto memCall = llvm::cast<clang::CXXMemberCallExpr>(childStmt);
-        llvm::outs() << memCall->getCallee()->imp << "\n";
-        memCall->getCallee()->getType();
-        // memCall->dumpColor();
+        if (!memCall)
+          continue;
+        // When this method in the constructor is a declare process statement,
+        // We register this process in the module.
+        if (memCall->getMethodDecl()->getNameAsString() !=
+            "declare_thread_process")
+          continue;
+        // declare process statement's first non-object (second) argument is the
+        // process name.
+        auto procVar = llvm::cast<clang::ImplicitCastExpr>(memCall->getArg(1));
+        auto procName = llvm::cast<clang::StringLiteral>(procVar->getSubExpr());
+        processNames.push_back(procName);
       }
     }
   }
-  // theModule.dump();
 }
 
 SysGenModule::~SysGenModule() {}

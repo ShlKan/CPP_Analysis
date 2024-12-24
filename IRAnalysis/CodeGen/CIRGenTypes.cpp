@@ -4,27 +4,30 @@
 #include "CIRGenModule.h"
 #include "TargetInfo.h"
 
+#include "CIR/Dialect/IR/CIRAttrs.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinTypes.h"
-#include "CIR/Dialect/IR/CIRTypes.h"
-#include "CIR/Dialect/IR/CIRAttrs.h"
 
+
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIR/FnInfoOpts.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/DeclObjC.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/GlobalDecl.h"
 #include "clang/AST/RecordLayout.h"
-#include "CIR/Dialect/IR/CIRTypes.h"
-#include "CIR/FnInfoOpts.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
 
+
 using namespace clang;
 using namespace cir;
 
-mlir::cir::CallingConv CIRGenTypes::ClangCallConvToCIRCallConv(clang::CallingConv CC) {
+mlir::cir::CallingConv
+CIRGenTypes::ClangCallConvToCIRCallConv(clang::CallingConv CC) {
   switch (CC) {
   case CC_C:
     return mlir::cir::CallingConv::C;

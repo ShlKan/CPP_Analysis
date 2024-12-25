@@ -1,12 +1,17 @@
-//===--- SysIR Module generation ---------===//
+
 
 #include "SysGenModule.h"
-#include "cir/Dialect/IR/CIROps.h.inc"
+#include "CIR/Dialect/IR/CIROps.h.inc"
+#include "SysGenProcess.h"
+#include "SysIR/Dialect/IR/SysDialect.h"
 #include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/Location.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Expr.h"
+#include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Casting.h"
-#include "llvm/Support/raw_ostream.h"
+#include <utility>
+
 
 namespace sys {
 
@@ -16,10 +21,8 @@ SysGenModule::SysGenModule(mlir::MLIRContext &context,
                            clang::DiagnosticsEngine &diags)
     : builder(&context), cirOptions(CIROptions), diags(diags), astCtx(astCtx) {}
 
-void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
-  theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
-  theModule.setName(moduleDecl->getDeclName().getAsString());
-  for (auto method : moduleDecl->methods()) {
+void SysGenModule::collectProcess(clang::CXXRecordDecl *moduleDecl) {
+  for (const auto &method : moduleDecl->methods()) {
     if (llvm::isa<clang::CXXConstructorDecl>(method)) {
       auto stmt = method->getBody();
       if (!stmt)
@@ -41,6 +44,30 @@ void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
       }
     }
   }
+}
+
+void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
+  theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
+  theModule.setName(moduleDecl->getDeclName().getAsString());
+
+  SysGenProcess genProcess(*this, builder);
+  builder.setInsertionPointToEnd(theModule.getBody());
+
+  collectProcess(moduleDecl);
+  llvm::SmallVector<mlir::sys::ProcDefOP, 4> processOPs;
+  for (const auto &method : moduleDecl->methods()) {
+    if (std::find_if(processNames.begin(), processNames.end(),
+                     [&method](clang::StringLiteral *procName) {
+                       return procName->getString() ==
+                              method->getDeclName().getAsString();
+                     }) != processNames.end()) {
+      auto proc = genProcess.buildProcess(method);
+      processOPs.push_back(proc);
+    }
+  }
+  for (const auto &procOP : processOPs)
+    genProcess.buildProcessRegister(procOP);
+  theModule->dump();
 }
 
 SysGenModule::~SysGenModule() {}

@@ -24,6 +24,7 @@ SysIRGenerator::~SysIRGenerator() {
 }
 
 void SysIRGenerator::Initialize(clang::ASTContext &Context) {
+  this->astCtx = &Context;
   mlirCtx = std::make_unique<mlir::MLIRContext>();
   mlirCtx->getOrLoadDialect<mlir::sys::SysDialect>();
   sysMG = std::make_unique<SysGenModule>(*mlirCtx, *astCtx, cirOpts, Diags);

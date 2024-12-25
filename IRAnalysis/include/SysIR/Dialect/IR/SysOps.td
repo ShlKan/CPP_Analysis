@@ -31,14 +31,15 @@ def ProcDefOP : SysOP<"ProcDef"> {
     let results = (outs SysProcType:$result);
 
     let regions = (region AnyRegion:$body);
+    
     let builders = [OpBuilder<(ins 
         "StringRef":$name, 
-        "SProcessType":$type,
+        "SProcessType":$type
         //CArg wraps a type and its default value
-        CArg<"ArrayRef<DictionaryAttr>", "{}">:$argAttrs)>];
+        //CArg<"ArrayRef<DictionaryAttr>", "{}">:$argAttrs
+        )>];
 
-  let assemblyFormat = "$proc_name $body attr-dict `:` type($result)";
-  let skipDefaultBuilders = 1;
+    let assemblyFormat = "$proc_name $body attr-dict `:` type($result)";
 }
 
 def ProcRegisterOP : SysOP<"ProcRegister"> {
@@ -50,8 +51,9 @@ def ProcRegisterOP : SysOP<"ProcRegister"> {
     }];
 
     let arguments = (ins SysProcType:$proc, Variadic<Sys_AnyType>:$args);
-    let assemblyFormat = "$proc $args attr-dict `:` type($proc) `=``>` type($args)";
+    let assemblyFormat = "$proc $args attr-dict `:` `(` type($args) `)` `=``>` type($proc)";
 }
+
 
 
 #endif

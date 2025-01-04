@@ -1,15 +1,14 @@
 //===--- SysIRGenerator.cpp - Emit Sys IR from ASTs ----------------------===//
 
 #include "SysIR/SysIRGenerator.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "SysGenModule.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 
 #include "mlir/IR/BuiltinOps.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
-#include "clang/Basic/TokenKinds.h"
 #include "llvm/Support/Casting.h"
-#include "llvm/Support/raw_ostream.h"
 #include <memory>
 
 using namespace sys;
@@ -27,6 +26,7 @@ void SysIRGenerator::Initialize(clang::ASTContext &Context) {
   this->astCtx = &Context;
   mlirCtx = std::make_unique<mlir::MLIRContext>();
   mlirCtx->getOrLoadDialect<mlir::sys::SysDialect>();
+  mlirCtx->getOrLoadDialect<mlir::cir::CIRDialect>();
   sysMG = std::make_unique<SysGenModule>(*mlirCtx, *astCtx, cirOpts, Diags);
 }
 

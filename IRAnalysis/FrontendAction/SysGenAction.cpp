@@ -5,7 +5,6 @@
 #include "clang/AST/DeclGroup.h"
 
 #include <SysIRFrontendAction/SysGenAction.h>
-#include <iostream>
 
 #include <memory>
 

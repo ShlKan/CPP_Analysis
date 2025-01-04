@@ -1,17 +1,24 @@
 
 
 #include "SysGenModule.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 #include "CIR/Dialect/IR/CIROps.h.inc"
+#include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIRGenBuilder.h"
 #include "SysGenProcess.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
+#include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinOps.h"
-#include "mlir/IR/Location.h"
+#include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Expr.h"
+#include "clang/AST/Type.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Casting.h"
+#include "llvm/Support/ErrorHandling.h"
+#include <cstdint>
+#include <string>
 #include <utility>
-
 
 namespace sys {
 
@@ -52,6 +59,29 @@ void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
 
   SysGenProcess genProcess(*this, builder);
   builder.setInsertionPointToEnd(theModule.getBody());
+
+  for (const auto &field : moduleDecl->fields()) {
+    auto ty = astCtx.getCanonicalType(field->getType());
+    switch (field->getType().getTypePtr()->getTypeClass()) {
+    case clang::Type::Builtin: {
+      switch (llvm::dyn_cast<clang::BuiltinType>(ty)->getKind()) {
+      case clang::BuiltinType::Int: {
+        mlir::cir::IntType i32Ty =
+            mlir::cir::IntType::get(builder.getContext(), 32, true);
+        builder.create<mlir::cir::ConstantOp>(
+            getLoc(field->getLocation()), mlir::cir::IntAttr::get(i32Ty, 2));
+        break;
+      }
+      default:
+        llvm_unreachable("Unsupport builtin type.");
+      }
+      break;
+    }
+    default:
+      llvm_unreachable("Unsupport type.");
+      break;
+    }
+  }
 
   collectProcess(moduleDecl);
   llvm::SmallVector<mlir::sys::ProcDefOP, 4> processOPs;

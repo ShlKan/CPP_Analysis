@@ -51,7 +51,7 @@ def ProcRegisterOP : SysOP<"ProcRegister"> {
     }];
 
     let arguments = (ins SysProcType:$proc, Variadic<Sys_AnyType>:$args);
-    let assemblyFormat = "$proc $args attr-dict `:` `(` type($args) `)` `=``>` type($proc)";
+    let assemblyFormat = "$proc $args attr-dict `[` type($proc) ` ` type($args) `]` `:` `void`";
 }
 
 

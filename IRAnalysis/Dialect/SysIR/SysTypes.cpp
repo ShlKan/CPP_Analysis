@@ -6,9 +6,13 @@
 #include "SysIR/Dialect/IR/SysTypes.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 
-#include "mlir/IR/OpImplementation.h"
-#include "mlir/IR/Types.h"
+#include "mlir/IR/BuiltinAttributes.h"
+#include "mlir/IR/BuiltinTypes.h"
+#include "mlir/IR/Diagnostics.h"
+#include "mlir/IR/DialectImplementation.h"
+#include "mlir/Interfaces/DataLayoutInterfaces.h"
 #include "mlir/Support/LLVM.h"
+#include "mlir/Support/LogicalResult.h"
 
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/STLExtras.h"
@@ -97,4 +101,20 @@ uint64_t
 SIntType::getPreferredAlignment(const ::mlir::DataLayout &dataLayout,
                                 ::mlir::DataLayoutEntryListRef params) const {
   return (uint64_t)(getWidth() / 8);
+}
+
+mlir::Type SysDialect::parseType(DialectAsmParser &printer) const {
+  // TODO
+  llvm::llvm_unreachable_internal("parseType: Have not yet implemented");
+}
+
+void SysDialect::printType(Type type, mlir::DialectAsmPrinter &printer) const {
+  if (generatedTypePrinter(type, printer).succeeded())
+    return;
+  llvm::TypeSwitch<Type>(type)
+      .Case<SIntType>([&](SIntType type) { type.print(printer); })
+      .Case<SProcessType>([&](SProcessType type) { type.print(printer); })
+      .Default([&](Type) {
+        llvm::report_fatal_error("printer is missing a handler for this type");
+      });
 }

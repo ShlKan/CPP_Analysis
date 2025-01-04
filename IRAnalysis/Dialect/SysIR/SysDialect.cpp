@@ -6,6 +6,7 @@
 #include "mlir/IR/OpImplementation.h"
 #include "mlir/Support/LLVM.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/Support/ErrorHandling.h"
 
 using namespace ::mlir;
 using namespace ::mlir::sys;
@@ -35,18 +36,12 @@ void ProcDefOP::build(::mlir::OpBuilder &odsBuilder,
 Attribute SysDialect::parseAttribute(mlir::DialectAsmParser &,
                                      mlir::Type) const {
   // TODO
+  llvm::llvm_unreachable_internal("parseAttribute: Have not yet implemented");
 }
 
 void SysDialect::printAttribute(Attribute attr, DialectAsmPrinter &os) const {
   // TODO
-}
-
-Type SysDialect::parseType(DialectAsmParser &parser) const {
-  // TODO
-}
-
-void SysDialect::printType(Type type, DialectAsmPrinter &printer) const {
-  // TODO
+  llvm::llvm_unreachable_internal("printAttribute: Have not yet implemented");
 }
 
 #define GET_OP_CLASSES

@@ -85,10 +85,9 @@ def SysProcType : Sys_Type<"SProcess", "s_proc"> {
   let parameters = (ins ArrayRefParameter<"Type">:$inputs);
 
   let assemblyFormat = [{
-    `P` ` ` `(` custom<ProcArgs>($inputs) `)`
+    `Proc` ` ` `(` custom<ProcArgs>($inputs) `)`
   }];
 
- 
 }
 
 def Sys_AnyType : AnyTypeOf<[

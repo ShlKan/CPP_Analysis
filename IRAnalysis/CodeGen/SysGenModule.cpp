@@ -5,6 +5,7 @@
 #include "CIR/Dialect/IR/CIROps.h.inc"
 #include "CIR/Dialect/IR/CIRTypes.h"
 #include "CIRGenBuilder.h"
+#include "CIRGenModule.h"
 #include "SysGenProcess.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "mlir/IR/BuiltinAttributes.h"
@@ -24,9 +25,10 @@ namespace sys {
 
 SysGenModule::SysGenModule(mlir::MLIRContext &context,
                            clang::ASTContext &astCtx,
+                           const clang::CodeGenOptions &codeGenOpts,
                            const cir::CIROptions &CIROptions,
                            clang::DiagnosticsEngine &diags)
-    : builder(&context), cirOptions(CIROptions), diags(diags), astCtx(astCtx) {}
+    : cir::CIRGenModule(context, astCtx, codeGenOpts, CIROptions, diags) {}
 
 void SysGenModule::collectProcess(clang::CXXRecordDecl *moduleDecl) {
   for (const auto &method : moduleDecl->methods()) {
@@ -66,8 +68,7 @@ void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
     case clang::Type::Builtin: {
       switch (llvm::dyn_cast<clang::BuiltinType>(ty)->getKind()) {
       case clang::BuiltinType::Int: {
-        mlir::cir::IntType i32Ty =
-            mlir::cir::IntType::get(builder.getContext(), 32, true);
+        mlir::cir::IntType i32Ty = SInt32Ty;
         builder.create<mlir::cir::ConstantOp>(
             getLoc(field->getLocation()), mlir::cir::IntAttr::get(i32Ty, 2));
         break;

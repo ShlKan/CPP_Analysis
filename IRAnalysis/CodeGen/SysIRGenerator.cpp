@@ -8,6 +8,7 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
+#include "clang/Basic/CodeGenOptions.h"
 #include "llvm/Support/Casting.h"
 #include <memory>
 
@@ -27,7 +28,9 @@ void SysIRGenerator::Initialize(clang::ASTContext &Context) {
   mlirCtx = std::make_unique<mlir::MLIRContext>();
   mlirCtx->getOrLoadDialect<mlir::sys::SysDialect>();
   mlirCtx->getOrLoadDialect<mlir::cir::CIRDialect>();
-  sysMG = std::make_unique<SysGenModule>(*mlirCtx, *astCtx, cirOpts, Diags);
+  clang::CodeGenOptions codeOpts;
+  sysMG = std::make_unique<SysGenModule>(*mlirCtx, *astCtx, codeOpts, cirOpts,
+                                         Diags);
 }
 
 bool SysIRGenerator::HandleTopLevelDecl(clang::DeclGroupRef D) {

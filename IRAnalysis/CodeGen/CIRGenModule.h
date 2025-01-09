@@ -45,6 +45,10 @@
 #include "mlir/IR/Value.h"
 
 using namespace clang;
+
+namespace sys {
+class SysGenModule;
+} // namespace sys
 namespace cir {
 
 class CIRGenFunction;
@@ -71,6 +75,8 @@ public:
   ~CIRGenModule();
 
   const std::string &getModuleNameHash() const { return ModuleNameHash; }
+
+  friend class sys::SysGenModule;
 
 private:
   mutable std::unique_ptr<TargetCIRGenInfo> TheTargetCIRGenInfo;

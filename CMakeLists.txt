@@ -3,7 +3,7 @@ project(CPPAnalysis)
 
 set(LLVM_LINK_COMPONENTS
   Support
-  )
+)
 
 set(CLANG_TABLEGEN_EXE true)
 
@@ -12,11 +12,9 @@ find_package(LLVM REQUIRED CONFIG)
 find_package(MLIR REQUIRED CONFIG)
 find_package(Clang REQUIRED CONFIG)
 
-
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using MLIRConfig.cmake in: ${MLIR_DIR}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-
 
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${CLANG_INCLUDE_DIRS})
@@ -30,9 +28,4 @@ include(AddLLVM)
 include(AddClang)
 include(AddMLIR)
 
-
-
-
 add_subdirectory(IRAnalysis)
-
-

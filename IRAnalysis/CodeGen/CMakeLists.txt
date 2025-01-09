@@ -43,6 +43,7 @@ add_clang_library(clangCIR
   SysIRGenerator.cpp
   SysGenModule.cpp
   SysGenProcess.cpp
+  SysGenDecl.cpp
   CIRPasses.cpp
   CIRRecordLayoutBuilder.cpp
   ConstantInitBuilder.cpp

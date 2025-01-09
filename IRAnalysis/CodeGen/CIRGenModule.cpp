@@ -185,6 +185,7 @@ CIRGenModule::CIRGenModule(mlir::MLIRContext &context,
 
   // FIXME(cir): Implement a custom CIR Module Op and attributes to leverage
   // MLIR features.
+  /* Hidden by Shuanglong. I don't think I need this.
   theModule->setAttr("cir.sob",
                      mlir::cir::SignedOverflowBehaviorAttr::get(&context, sob));
   theModule->setAttr(
@@ -200,9 +201,9 @@ CIRGenModule::CIRGenModule(mlir::MLIRContext &context,
   if (!Path.empty()) {
     theModule.setSymName(Path);
     theModule->setLoc(mlir::FileLineColLoc::get(&context, Path,
-                                                /*line=*/0,
-                                                /*col=*/0));
-  }
+                                                /*line=0,
+                                                /*col=0));
+} */
 }
 
 CIRGenModule::~CIRGenModule() {}

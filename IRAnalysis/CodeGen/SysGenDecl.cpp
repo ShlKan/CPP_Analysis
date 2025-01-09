@@ -20,6 +20,7 @@
 #define MLIR_SYS_DECLARATION_GEN_H
 
 #include "SysGenDecl.h"
+#include "CIR/Dialect/IR/CIRDialect.h"
 
 namespace sys {
 

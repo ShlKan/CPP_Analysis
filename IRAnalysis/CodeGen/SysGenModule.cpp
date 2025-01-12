@@ -8,15 +8,18 @@
 #include "CIRGenModule.h"
 #include "SysGenProcess.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
+#include "SysIR/Dialect/IR/SysTypes.h"
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/Type.h"
+#include "clang/Basic/LLVM.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -63,14 +66,14 @@ void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
   builder.setInsertionPointToEnd(theModule.getBody());
 
   for (const auto &field : moduleDecl->fields()) {
+    auto val = field->getInClassInitializer()->EvaluateKnownConstInt(
+        moduleDecl->getASTContext());
     auto ty = astCtx.getCanonicalType(field->getType());
     switch (field->getType().getTypePtr()->getTypeClass()) {
     case clang::Type::Builtin: {
       switch (llvm::dyn_cast<clang::BuiltinType>(ty)->getKind()) {
       case clang::BuiltinType::Int: {
-        mlir::cir::IntType i32Ty = SInt32Ty;
-        builder.create<mlir::cir::ConstantOp>(
-            getLoc(field->getLocation()), mlir::cir::IntAttr::get(i32Ty, 2));
+        builder.getConstInt(getLoc(field->getLocation()), val);
         break;
       }
       default:
@@ -99,6 +102,22 @@ void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
   for (const auto &procOP : processOPs)
     genProcess.buildProcessRegister(procOP);
   theModule->dump();
+}
+
+mlir::sys::SIntType SysGenModule::getSSignedIntType(uint32_t size) {
+  if (sSignedIntTyMap.count(size))
+    return sSignedIntTyMap[size];
+  auto ty = mlir::sys::SIntType::get(builder.getContext(), size, true);
+  sSignedIntTyMap[size] = ty;
+  return ty;
+}
+
+mlir::sys::SIntType SysGenModule::getSUSignedIntType(uint32_t size) {
+  if (sUnsigendIntTyMap.count(size))
+    return sUnsigendIntTyMap[size];
+  auto ty = mlir::sys::SIntType::get(builder.getContext(), size, false);
+  sUnsigendIntTyMap[size] = ty;
+  return ty;
 }
 
 SysGenModule::~SysGenModule() {}

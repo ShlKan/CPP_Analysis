@@ -9,11 +9,14 @@
 #include "clang/AST/Expr.h"
 #include "clang/Basic/Diagnostic.h"
 #include "llvm/ADT/SmallVector.h"
+#include <cstdint>
+#include <map>
 
 #include "CIRGenModule.h"
 
 #include "CPPFrontend/CIROptions.h"
 
+#include "SysIR/Dialect/IR/SysTypes.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/MLIRContext.h"
@@ -32,12 +35,15 @@ public:
                const cir::CIROptions &CIROption,
                clang::DiagnosticsEngine &Diags);
 
+  mlir::sys::SIntType getSSignedIntType(uint32_t size);
+  mlir::sys::SIntType getSUSignedIntType(uint32_t size);
+
   ~SysGenModule();
 
 private:
   llvm::SmallVector<clang::StringLiteral *, 4> processNames;
-
-private:
+  std::map<uint32_t, mlir::sys::SIntType> sSignedIntTyMap;
+  std::map<uint32_t, mlir::sys::SIntType> sUnsigendIntTyMap;
   void collectProcess(clang::CXXRecordDecl *moduleDecl);
 
 public:

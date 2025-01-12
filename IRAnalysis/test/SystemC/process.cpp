@@ -7,7 +7,7 @@ SC_MODULE(Process) {
     SC_THREAD(emptyProcess1);
   }
 
-  int x;
+  int x = 9;
   void emptyProcess() {
     // Do nothing.
   }

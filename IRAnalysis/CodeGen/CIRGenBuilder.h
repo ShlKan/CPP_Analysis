@@ -10,12 +10,10 @@
 #define LLVM_CLANG_LIB_CIR_CIRGENBUILDER_H
 
 #include "Address.h"
+#include "CIR/MissingFeatures.h"
 #include "CIRGenRecordLayout.h"
 #include "CIRGenTypeCache.h"
-#include "CIR/MissingFeatures.h"
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/Type.h"
 #include "CIR/Dialect/Builder/CIRBaseBuilder.h"
 #include "CIR/Dialect/IR/CIRAttrs.h"
 #include "CIR/Dialect/IR/CIRDataLayout.h"
@@ -23,6 +21,8 @@
 #include "CIR/Dialect/IR/CIROpsEnums.h"
 #include "CIR/Dialect/IR/CIRTypes.h"
 #include "CIR/Dialect/IR/FPEnv.h"
+#include "clang/AST/Decl.h"
+#include "clang/AST/Type.h"
 
 #include "mlir/IR/Attributes.h"
 #include "mlir/IR/Builders.h"
@@ -61,11 +61,9 @@ public:
     RecordNames["anon"] = 0; // in order to start from the name "anon.0"
   }
 
-  std::string getUniqueAnonRecordName() {
-    return getUniqueRecordName("anon");
-  }
+  std::string getUniqueAnonRecordName() { return getUniqueRecordName("anon"); }
 
-  std::string getUniqueRecordName(const std::string& baseName) {
+  std::string getUniqueRecordName(const std::string &baseName) {
     auto it = RecordNames.find(baseName);
     if (it == RecordNames.end()) {
       RecordNames[baseName] = 0;

@@ -26,7 +26,7 @@ class Sys_Type<string name, string typeMnemonic, list<Trait> traits =[],
 //===----------------------------------------------------------------------===//
 // Sys Integer Type
 //===----------------------------------------------------------------------===//
-def Sys_IntType : Sys_Type<"SInt", "s_int", 
+def Sys_IntType : Sys_Type<"SInt", "s_int",
     [DeclareTypeInterfaceMethods<DataLayoutTypeInterface>]> {
   let summary = "System integer type with arbitrary precision up to a fixed limit";
 

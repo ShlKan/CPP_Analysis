@@ -29,5 +29,5 @@ mlir_tablegen(CIROpsAttributes.cpp.inc -gen-attrdef-defs)
 add_public_tablegen_target(MLIRCIREnumsGen)
 
 clang_tablegen(CIRBuiltinsLowering.inc -gen-cir-builtins-lowering
-               SOURCE CIROps.td
-               TARGET CIRBuiltinsLowering)
+    SOURCE CIROps.td
+    TARGET CIRBuiltinsLowering)

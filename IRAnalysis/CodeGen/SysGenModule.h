@@ -16,9 +16,11 @@
 
 #include "CPPFrontend/CIROptions.h"
 
+#include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/Location.h"
 #include "mlir/IR/MLIRContext.h"
 
 namespace sys {
@@ -47,6 +49,8 @@ private:
   void collectProcess(clang::CXXRecordDecl *moduleDecl);
 
 public:
+  mlir::sys::ConstantOp getConstInt(mlir::Location loc, mlir::Type ty,
+                                    uint64_t val);
   void buildSysModule(clang::CXXRecordDecl *moduleDecl);
 };
 } // namespace sys

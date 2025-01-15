@@ -39,10 +39,5 @@ Attribute SysDialect::parseAttribute(mlir::DialectAsmParser &,
   llvm::llvm_unreachable_internal("parseAttribute: Have not yet implemented");
 }
 
-void SysDialect::printAttribute(Attribute attr, DialectAsmPrinter &os) const {
-  // TODO
-  llvm::llvm_unreachable_internal("printAttribute: Have not yet implemented");
-}
-
 #define GET_OP_CLASSES
 #include "SysIR/Dialect/IR/SysOps.cpp.inc"

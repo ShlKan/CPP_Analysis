@@ -37,12 +37,8 @@ static void printProcArgs(mlir::AsmPrinter &p, llvm::ArrayRef<mlir::Type> args);
 using namespace ::mlir::sys;
 
 void SIntType::print(::mlir::AsmPrinter &odsPrinter) const {
-  if (getIsSigned())
-    odsPrinter << "SInt<";
-  else
-    odsPrinter << "UInt<";
-  odsPrinter << this->getWidth();
-  odsPrinter << ">";
+  auto sign = isSigned() ? 's' : 'u';
+  odsPrinter << "<" << sign << ", " << this->getWidth() << ">";
 }
 
 mlir::LogicalResult

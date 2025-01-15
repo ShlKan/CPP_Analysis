@@ -7,10 +7,12 @@
 #include "CIRGenBuilder.h"
 #include "CIRGenModule.h"
 #include "SysGenProcess.h"
+#include "SysIR/Dialect/IR/SysAttrs.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/Location.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Expr.h"
@@ -58,6 +60,12 @@ void SysGenModule::collectProcess(clang::CXXRecordDecl *moduleDecl) {
   }
 }
 
+mlir::sys::ConstantOp SysGenModule::getConstInt(mlir::Location loc,
+                                                mlir::Type ty, uint64_t val) {
+  return builder.create<mlir::sys::ConstantOp>(
+      loc, ty, mlir::sys::IntAttr::get(ty, val));
+}
+
 void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
   theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   theModule.setName(moduleDecl->getDeclName().getAsString());
@@ -66,11 +74,11 @@ void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
   builder.setInsertionPointToEnd(theModule.getBody());
 
   for (const auto &field : moduleDecl->fields()) {
-    auto val = field->getInClassInitializer()->EvaluateKnownConstInt(
-        moduleDecl->getASTContext());
-    auto ty = astCtx.getCanonicalType(field->getType());
     switch (field->getType().getTypePtr()->getTypeClass()) {
     case clang::Type::Builtin: {
+      auto val = field->getInClassInitializer()->EvaluateKnownConstInt(
+          moduleDecl->getASTContext());
+      auto ty = astCtx.getCanonicalType(field->getType());
       switch (llvm::dyn_cast<clang::BuiltinType>(ty)->getKind()) {
       case clang::BuiltinType::Int: {
         builder.getConstInt(getLoc(field->getLocation()), val);

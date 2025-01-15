@@ -9,6 +9,8 @@
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/SymbolTable.h"
+#include "mlir/Interfaces/InferTypeOpInterface.h"
+#include "mlir/Interfaces/SideEffectInterfaces.h"
 
 #include "SysIR/Dialect/IR/SysOpsDialect.h.inc"
 #include "SysIR/Dialect/IR/SysTypes.h"

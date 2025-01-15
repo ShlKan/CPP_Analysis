@@ -36,6 +36,45 @@ static void printProcArgs(mlir::AsmPrinter &p, llvm::ArrayRef<mlir::Type> args);
 
 using namespace ::mlir::sys;
 
+mlir::Type SIntType::parse(mlir::AsmParser &parser) {
+  auto *context = parser.getBuilder().getContext();
+  auto loc = parser.getCurrentLocation();
+  bool isSigned;
+  unsigned width;
+
+  if (parser.parseLess())
+    return {};
+
+  // Fetch integer sign.
+  llvm::StringRef sign;
+  if (parser.parseKeyword(&sign))
+    return {};
+  if (sign == "s")
+    isSigned = true;
+  else if (sign == "u")
+    isSigned = false;
+  else {
+    parser.emitError(loc, "expected 's' or 'u'");
+    return {};
+  }
+
+  if (parser.parseComma())
+    return {};
+
+  // Fetch integer size.
+  if (parser.parseInteger(width))
+    return {};
+  if (width < 1 || width > 64) {
+    parser.emitError(loc, "expected integer width to be from 1 up to 64");
+    return {};
+  }
+
+  if (parser.parseGreater())
+    return {};
+
+  return SIntType::get(context, width, isSigned);
+}
+
 void SIntType::print(::mlir::AsmPrinter &odsPrinter) const {
   auto sign = isSigned() ? 's' : 'u';
   odsPrinter << "<" << sign << ", " << this->getWidth() << ">";

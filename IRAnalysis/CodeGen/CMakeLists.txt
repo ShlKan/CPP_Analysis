@@ -44,6 +44,7 @@ add_clang_library(clangCIR
   SysGenModule.cpp
   SysGenProcess.cpp
   SysGenDecl.cpp
+  SysMatcher.cpp
   CIRPasses.cpp
   CIRRecordLayoutBuilder.cpp
   ConstantInitBuilder.cpp
@@ -64,6 +65,7 @@ add_clang_library(clangCIR
   clangAST
   clangBasic
   clangLex
+  clangTooling
   ${dialect_libs}
   MLIRCIR
   MLIRSYSIR

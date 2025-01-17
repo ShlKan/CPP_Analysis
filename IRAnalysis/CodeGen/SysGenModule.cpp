@@ -126,7 +126,6 @@ void SysGenModule::buildSysModule(const clang::CXXRecordDecl *moduleDecl) {
     } else if (auto sizeOpt = sysMatcher->matchSysInt(
                    field->getType(), moduleDecl->getASTContext());
                sizeOpt != std::nullopt) {
-      field->dumpColor();
       auto initVal = sysMatcher->matchFieldInitAPInt(*field, astCtx);
       getConstSysInt(getLoc(field->getLocation()),
                      getSSignedIntType(sizeOpt.value()), initVal);

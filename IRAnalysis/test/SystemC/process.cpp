@@ -8,6 +8,8 @@ SC_MODULE(Process) {
   }
 
   int x = 9;
+  sc_dt::sc_int<33> y;
+  // bool z;
   void emptyProcess() {
     // Do nothing.
   }

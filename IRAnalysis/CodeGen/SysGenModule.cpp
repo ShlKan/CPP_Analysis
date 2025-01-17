@@ -1,4 +1,13 @@
-
+/*
+ * Created Date: Th Jan 2025
+ * Author: Shuanglong Kan
+ * -----
+ * Last Modified: Fri Jan 17 2025
+ * Modified By: Shuanglong Kan
+ * -----
+ * Copyright (c) 2025 Shuanglong Kan
+ * ---------------------------------------------------------
+ */
 
 #include "SysGenModule.h"
 #include "CIR/Dialect/IR/CIRDialect.h"
@@ -10,21 +19,27 @@
 #include "SysIR/Dialect/IR/SysAttrs.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
+#include "SysMatcher.h"
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Location.h"
+#include "clang/AST/APValue.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/Type.h"
+
 #include "clang/Basic/LLVM.h"
+#include "llvm/ADT/APInt.h"
+#include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
-#include <cstddef>
+
 #include <cstdint>
+#include <memory>
+#include <optional>
 #include <string>
-#include <utility>
 
 namespace sys {
 
@@ -33,40 +48,68 @@ SysGenModule::SysGenModule(mlir::MLIRContext &context,
                            const clang::CodeGenOptions &codeGenOpts,
                            const cir::CIROptions &CIROptions,
                            clang::DiagnosticsEngine &diags)
-    : cir::CIRGenModule(context, astCtx, codeGenOpts, CIROptions, diags) {}
+    : cir::CIRGenModule(context, astCtx, codeGenOpts, CIROptions, diags),
+      sysMatcher(std::make_unique<sys::SysMatcher>()) {}
 
-void SysGenModule::collectProcess(clang::CXXRecordDecl *moduleDecl) {
+void SysGenModule::collectProcess(const clang::CXXRecordDecl *moduleDecl) {
   for (const auto &method : moduleDecl->methods()) {
-    if (llvm::isa<clang::CXXConstructorDecl>(method)) {
-      auto stmt = method->getBody();
-      if (!stmt)
+    if (!llvm::isa<clang::CXXConstructorDecl>(method))
+      continue;
+    auto stmt = method->getBody();
+    if (!stmt)
+      continue;
+    for (const auto &childStmt : stmt->children()) {
+      auto memCall = llvm::cast<clang::CXXMemberCallExpr>(childStmt);
+      if (!memCall)
         continue;
-      for (const auto &childStmt : stmt->children()) {
-        auto memCall = llvm::cast<clang::CXXMemberCallExpr>(childStmt);
-        if (!memCall)
-          continue;
-        // When this method in the constructor is a declare process statement,
-        // We register this process in the module.
-        if (memCall->getMethodDecl()->getNameAsString() !=
-            "declare_thread_process")
-          continue;
-        // declare process statement's first non-object (second) argument is the
-        // process name.
-        auto procVar = llvm::cast<clang::ImplicitCastExpr>(memCall->getArg(1));
-        auto procName = llvm::cast<clang::StringLiteral>(procVar->getSubExpr());
-        processNames.push_back(procName);
-      }
+      // When this method in the constructor is a declare process statement,
+      // We register this process in the module.
+      if (memCall->getMethodDecl()->getNameAsString() !=
+          "declare_thread_process")
+        continue;
+      // declare process statement's first non-object (second) argument is the
+      // process name.
+      auto procVar = llvm::cast<clang::ImplicitCastExpr>(memCall->getArg(1));
+      auto procName = llvm::cast<clang::StringLiteral>(procVar->getSubExpr());
+      processNames.push_back(procName);
     }
   }
 }
 
-mlir::sys::ConstantOp SysGenModule::getConstInt(mlir::Location loc,
-                                                mlir::Type ty, uint64_t val) {
+mlir::sys::ConstantOp SysGenModule::getConstSysInt(mlir::Location loc,
+                                                   mlir::Type ty,
+                                                   llvm::APInt &val) {
   return builder.create<mlir::sys::ConstantOp>(
       loc, ty, mlir::sys::IntAttr::get(ty, val));
 }
 
-void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
+void SysGenModule::buildFieldDeclBuiltin(mlir::Location loc,
+                                         clang::BuiltinType::Kind &kind,
+                                         llvm::APInt &val) {
+  switch (kind) {
+  case clang::BuiltinType::Int:
+  case clang::BuiltinType::Int128:
+  case clang::BuiltinType::Long:
+  case clang::BuiltinType::LongLong: {
+    builder.getConstInt(loc, llvm::APSInt(val, false));
+    break;
+  }
+  case clang::BuiltinType::UInt:
+  case clang::BuiltinType::UInt128:
+  case clang::BuiltinType::ULong:
+  case clang::BuiltinType::ULongLong: {
+    builder.getConstInt(loc, val);
+    break;
+  }
+  case clang::BuiltinType::Bool: {
+    break;
+  }
+  default:
+    break;
+  }
+}
+
+void SysGenModule::buildSysModule(const clang::CXXRecordDecl *moduleDecl) {
   theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   theModule.setName(moduleDecl->getDeclName().getAsString());
 
@@ -74,32 +117,27 @@ void SysGenModule::buildSysModule(clang::CXXRecordDecl *moduleDecl) {
   builder.setInsertionPointToEnd(theModule.getBody());
 
   for (const auto &field : moduleDecl->fields()) {
-    switch (field->getType().getTypePtr()->getTypeClass()) {
-    case clang::Type::Builtin: {
-      auto val = field->getInClassInitializer()->EvaluateKnownConstInt(
-          moduleDecl->getASTContext());
-      auto ty = astCtx.getCanonicalType(field->getType());
-      switch (llvm::dyn_cast<clang::BuiltinType>(ty)->getKind()) {
-      case clang::BuiltinType::Int: {
-        builder.getConstInt(getLoc(field->getLocation()), val);
-        break;
-      }
-      default:
-        llvm_unreachable("Unsupport builtin type.");
-      }
-      break;
-    }
-    default:
+    // TODO : currently only support constant OP. When expr in sysIR is defined,
+    if (auto kindOpt = sysMatcher->matchBuiltinInt(field->getType(), astCtx);
+        kindOpt.has_value()) {
+      auto initVal = sysMatcher->matchFieldInitAPInt(*field, astCtx);
+      buildFieldDeclBuiltin(getLoc(field->getLocation()), kindOpt.value(),
+                            initVal);
+    } else if (auto sizeOpt = sysMatcher->matchSysInt(
+                   field->getType(), moduleDecl->getASTContext());
+               sizeOpt != std::nullopt) {
+      auto initVal = sysMatcher->matchFieldInitAPInt(*field, astCtx);
+      getConstSysInt(getLoc(field->getLocation()),
+                     getSSignedIntType(sizeOpt.value()), initVal);
+    } else
       llvm_unreachable("Unsupport type.");
-      break;
-    }
   }
 
   collectProcess(moduleDecl);
   llvm::SmallVector<mlir::sys::ProcDefOP, 4> processOPs;
   for (const auto &method : moduleDecl->methods()) {
     if (std::find_if(processNames.begin(), processNames.end(),
-                     [&method](clang::StringLiteral *procName) {
+                     [&method](const clang::StringLiteral *procName) {
                        return procName->getString() ==
                               method->getDeclName().getAsString();
                      }) != processNames.end()) {

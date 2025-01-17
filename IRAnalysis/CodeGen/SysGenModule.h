@@ -7,10 +7,13 @@
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Expr.h"
+#include "clang/AST/Type.h"
 #include "clang/Basic/Diagnostic.h"
+#include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/SmallVector.h"
 #include <cstdint>
 #include <map>
+#include <memory>
 
 #include "CIRGenModule.h"
 
@@ -18,6 +21,7 @@
 
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
+#include "SysMatcher.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Location.h"
@@ -46,12 +50,15 @@ private:
   llvm::SmallVector<clang::StringLiteral *, 4> processNames;
   std::map<uint32_t, mlir::sys::SIntType> sSignedIntTyMap;
   std::map<uint32_t, mlir::sys::SIntType> sUnsigendIntTyMap;
-  void collectProcess(clang::CXXRecordDecl *moduleDecl);
+  void collectProcess(const clang::CXXRecordDecl *moduleDecl);
+  std::unique_ptr<sys::SysMatcher> sysMatcher;
+  void buildFieldDeclBuiltin(mlir::Location loc, clang::BuiltinType::Kind &kind,
+                             llvm::APInt &val);
 
 public:
-  mlir::sys::ConstantOp getConstInt(mlir::Location loc, mlir::Type ty,
-                                    uint64_t val);
-  void buildSysModule(clang::CXXRecordDecl *moduleDecl);
+  mlir::sys::ConstantOp getConstSysInt(mlir::Location loc, mlir::Type ty,
+                                       llvm::APInt &val);
+  void buildSysModule(const clang::CXXRecordDecl *moduleDecl);
 };
 } // namespace sys
 

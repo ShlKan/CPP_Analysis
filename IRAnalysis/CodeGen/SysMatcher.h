@@ -64,7 +64,7 @@ private:
 
   /* The pattern of declaration  */
   const DeclarationMatcher fieldInitPattern =
-      fieldDecl(hasInClassInitializer(integerLiteral().bind("init")));
+      fieldDecl(hasInClassInitializer(findAll(integerLiteral().bind("init"))));
 };
 } // namespace sys
 

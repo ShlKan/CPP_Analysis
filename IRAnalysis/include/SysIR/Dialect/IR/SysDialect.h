@@ -13,6 +13,7 @@
 #include "mlir/Interfaces/SideEffectInterfaces.h"
 
 #include "SysIR/Dialect/IR/SysOpsDialect.h.inc"
+#include "SysIR/Dialect/IR/SysOpsEnums.h.inc"
 #include "SysIR/Dialect/IR/SysTypes.h"
 
 #define GET_OP_CLASSES

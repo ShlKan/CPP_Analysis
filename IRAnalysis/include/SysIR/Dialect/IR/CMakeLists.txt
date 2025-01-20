@@ -8,6 +8,8 @@ mlir_tablegen(SysOpsDialect.cpp.inc -gen-dialect-defs)
 add_public_tablegen_target(MLIRSysOpsIncGen)
 
 # Generate extra headers for custom enum and attrs.
+mlir_tablegen(SysOpsEnums.h.inc -gen-enum-decls)
+mlir_tablegen(SysOpsEnums.cpp.inc -gen-enum-defs)
 mlir_tablegen(SysOpsAttributes.h.inc -gen-attrdef-decls)
 mlir_tablegen(SysOpsAttributes.cpp.inc -gen-attrdef-defs)
 add_public_tablegen_target(MLIRSysAttrGen)

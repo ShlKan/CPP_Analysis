@@ -12,6 +12,7 @@ using namespace ::mlir;
 using namespace ::mlir::sys;
 
 #include "SysIR/Dialect/IR/SysOpsDialect.cpp.inc"
+#include "SysIR/Dialect/IR/SysOpsEnums.cpp.inc"
 
 void SysDialect::initialize() {
   registerTypes();
@@ -37,6 +38,12 @@ Attribute SysDialect::parseAttribute(mlir::DialectAsmParser &,
                                      mlir::Type) const {
   // TODO
   llvm::llvm_unreachable_internal("parseAttribute: Have not yet implemented");
+}
+
+//===---     BinOp     ---====//
+LogicalResult BinOp::verify() {
+  // TODO,verification should be done here.
+  return mlir::success();
 }
 
 #define GET_OP_CLASSES

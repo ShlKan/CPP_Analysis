@@ -15,6 +15,7 @@
 #include "CIR/Dialect/IR/CIRTypes.h"
 #include "CIRGenBuilder.h"
 #include "CIRGenModule.h"
+#include "SysGenExpr.h"
 #include "SysGenProcess.h"
 #include "SysIR/Dialect/IR/SysAttrs.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
@@ -23,6 +24,7 @@
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Location.h"
+#include "mlir/IR/SymbolTable.h"
 #include "clang/AST/APValue.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
@@ -33,6 +35,7 @@
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
 
@@ -49,7 +52,8 @@ SysGenModule::SysGenModule(mlir::MLIRContext &context,
                            const cir::CIROptions &CIROptions,
                            clang::DiagnosticsEngine &diags)
     : cir::CIRGenModule(context, astCtx, codeGenOpts, CIROptions, diags),
-      sysMatcher(std::make_unique<sys::SysMatcher>()) {}
+      sysMatcher(std::make_unique<sys::SysMatcher>(astCtx)),
+      sysGenExpr(std::make_unique<sys::SysGenExpr>(builder, this, astCtx)) {}
 
 void SysGenModule::collectProcess(const clang::CXXRecordDecl *moduleDecl) {
   for (const auto &method : moduleDecl->methods()) {
@@ -77,13 +81,16 @@ void SysGenModule::collectProcess(const clang::CXXRecordDecl *moduleDecl) {
 }
 
 mlir::sys::ConstantOp SysGenModule::getConstSysInt(mlir::Location loc,
+                                                   llvm::StringRef varName,
                                                    mlir::Type ty,
                                                    llvm::APInt &val) {
-  return builder.create<mlir::sys::ConstantOp>(
+  auto ConstantOp = builder.create<mlir::sys::ConstantOp>(
       loc, ty, mlir::sys::IntAttr::get(ty, val));
+  mlir::SymbolTable::setSymbolName(ConstantOp, varName);
 }
 
 void SysGenModule::buildFieldDeclBuiltin(mlir::Location loc,
+                                         llvm::StringRef varName,
                                          clang::BuiltinType::Kind &kind,
                                          llvm::APInt &val) {
   switch (kind) {
@@ -91,14 +98,16 @@ void SysGenModule::buildFieldDeclBuiltin(mlir::Location loc,
   case clang::BuiltinType::Int128:
   case clang::BuiltinType::Long:
   case clang::BuiltinType::LongLong: {
-    builder.getConstInt(loc, llvm::APSInt(val, false));
+    auto constantOp = builder.getConstInt(loc, llvm::APSInt(val, false));
+    mlir::SymbolTable::setSymbolName(constantOp, varName);
     break;
   }
   case clang::BuiltinType::UInt:
   case clang::BuiltinType::UInt128:
   case clang::BuiltinType::ULong:
   case clang::BuiltinType::ULongLong: {
-    builder.getConstInt(loc, val);
+    auto constantOp = builder.getConstInt(loc, val);
+    mlir::SymbolTable::setSymbolName(constantOp, varName);
     break;
   }
   case clang::BuiltinType::Bool: {
@@ -118,17 +127,21 @@ void SysGenModule::buildSysModule(const clang::CXXRecordDecl *moduleDecl) {
 
   for (const auto &field : moduleDecl->fields()) {
     // TODO : currently only support constant OP. When expr in sysIR is defined,
-    if (auto kindOpt = sysMatcher->matchBuiltinInt(field->getType(), astCtx);
+    if (auto kindOpt = sysMatcher->matchBuiltinInt(field->getType());
         kindOpt.has_value()) {
-      auto initVal = sysMatcher->matchFieldInitAPInt(*field, astCtx);
-      buildFieldDeclBuiltin(getLoc(field->getLocation()), kindOpt.value(),
-                            initVal);
-    } else if (auto sizeOpt = sysMatcher->matchSysInt(
-                   field->getType(), moduleDecl->getASTContext());
+      if (auto initVal = sysMatcher->matchFieldInitAPInt(*field))
+        buildFieldDeclBuiltin(getLoc(field->getLocation()),
+                              field->getDeclName().getAsString(),
+                              kindOpt.value(), initVal.value());
+    } else if (auto sizeOpt = sysMatcher->matchSysInt(field->getType());
                sizeOpt != std::nullopt) {
-      auto initVal = sysMatcher->matchFieldInitAPInt(*field, astCtx);
-      getConstSysInt(getLoc(field->getLocation()),
-                     getSSignedIntType(sizeOpt.value()), initVal);
+      if (auto initVal = sysMatcher->matchFieldInitAPInt(*field))
+        getConstSysInt(getLoc(field->getLocation()),
+                       field->getDeclName().getAsString(),
+                       getSSignedIntType(sizeOpt.value()), initVal.value());
+      else {
+        sysGenExpr->buildExpr(field->getInClassInitializer(), theModule);
+      }
     } else
       llvm_unreachable("Unsupport type.");
   }

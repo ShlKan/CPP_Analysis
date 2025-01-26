@@ -14,6 +14,8 @@
 
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
+#include "clang/AST/Expr.h"
+#include "clang/AST/Stmt.h"
 #include "clang/AST/Type.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
@@ -29,29 +31,35 @@ namespace sys {
  */
 class SysMatcher {
 public:
-  SysMatcher() = default;
+  SysMatcher(clang::ASTContext &astCtx) : astCtx(astCtx) {};
 
   /*
    * Match a type against a C++ builtin integer. If matched then
    * return the bitwidth of the type, otherwise return nullopt.
    */
   std::optional<clang::BuiltinType::Kind>
-  matchBuiltinInt(const clang::QualType &type, clang::ASTContext &ctx);
+  matchBuiltinInt(const clang::QualType &type);
 
   /*
    * Match a type against a systemc integer type. If matched then
    * return the bitwidth of the type, otherwise return nullopt.
    */
-  std::optional<uint32_t> matchSysInt(const clang::QualType &type,
-                                      clang::ASTContext &ctx);
+  std::optional<uint32_t> matchSysInt(const clang::QualType &type);
 
   /*
    * Match a FieldDecl's initial value.
    */
-  llvm::APInt matchFieldInitAPInt(const clang::FieldDecl &fieldDecl,
-                                  clang::ASTContext &ctx);
+  std::optional<llvm::APInt>
+  matchFieldInitAPInt(const clang::FieldDecl &fieldDecl);
+
+  /*
+   * Match a statement expression.
+   */
+  std::optional<const clang::MemberExpr *>
+  matchMemExpr(const clang::Stmt *stmt);
 
 private:
+  clang::ASTContext &astCtx;
   /* The pattern of SystemC integer Type. */
   const TypeMatcher sysSigIntPattern = elaboratedType(
       hasQualifier(specifiesNamespace(hasName("sc_dt"))),
@@ -65,6 +73,10 @@ private:
   /* The pattern of declaration  */
   const DeclarationMatcher fieldInitPattern =
       fieldDecl(hasInClassInitializer(findAll(integerLiteral().bind("init"))));
+
+  /* ImplicitCastExpr  */
+  const StatementMatcher implicitCasterPattern =
+      findAll(memberExpr(findAll(memberExpr().bind("memExpr"))));
 };
 } // namespace sys
 

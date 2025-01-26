@@ -9,6 +9,8 @@ SC_MODULE(Process) {
 
   int x = 9;
   sc_dt::sc_int<33> y = 32;
+  sc_dt::sc_int<33> z = 32;
+  sc_dt::sc_int<33> t = y + z;
   // bool z;
   void emptyProcess() {
     // Do nothing.

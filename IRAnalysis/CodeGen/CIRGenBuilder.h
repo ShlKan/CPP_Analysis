@@ -24,6 +24,9 @@
 #include "clang/AST/Decl.h"
 #include "clang/AST/Type.h"
 
+#include "SysIR/Dialect/IR/SysAttrs.h"
+#include "SysIR/Dialect/IR/SysDialect.h"
+
 #include "mlir/IR/Attributes.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinAttributes.h"
@@ -530,6 +533,14 @@ public:
   mlir::cir::ConstantOp getConstInt(mlir::Location loc, llvm::APSInt intVal);
 
   mlir::cir::ConstantOp getConstInt(mlir::Location loc, llvm::APInt intVal);
+
+  mlir::sys::ConstantOp getConstSysInt(mlir::Location loc,
+                                       llvm::StringRef varName, mlir::Type ty,
+                                       llvm::APInt &val) {
+    auto ConstantOp = create<mlir::sys::ConstantOp>(
+        loc, ty, mlir::sys::IntAttr::get(ty, val));
+    mlir::SymbolTable::setSymbolName(ConstantOp, varName);
+  }
 
   mlir::cir::ConstantOp getConstInt(mlir::Location loc, mlir::Type t,
                                     uint64_t C);

@@ -19,6 +19,7 @@
 
 #include "CPPFrontend/CIROptions.h"
 
+#include "SysGenExpr.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
 #include "SysMatcher.h"
@@ -48,15 +49,17 @@ public:
 
 private:
   llvm::SmallVector<clang::StringLiteral *, 4> processNames;
-  std::map<uint32_t, mlir::sys::SIntType> sSignedIntTyMap;
-  std::map<uint32_t, mlir::sys::SIntType> sUnsigendIntTyMap;
+  std::unordered_map<uint32_t, mlir::sys::SIntType> sSignedIntTyMap;
+  std::unordered_map<uint32_t, mlir::sys::SIntType> sUnsigendIntTyMap;
   void collectProcess(const clang::CXXRecordDecl *moduleDecl);
   std::unique_ptr<sys::SysMatcher> sysMatcher;
-  void buildFieldDeclBuiltin(mlir::Location loc, clang::BuiltinType::Kind &kind,
-                             llvm::APInt &val);
+  std::unique_ptr<sys::SysGenExpr> sysGenExpr;
+  void buildFieldDeclBuiltin(mlir::Location loc, llvm::StringRef varName,
+                             clang::BuiltinType::Kind &kind, llvm::APInt &val);
 
 public:
-  mlir::sys::ConstantOp getConstSysInt(mlir::Location loc, mlir::Type ty,
+  mlir::sys::ConstantOp getConstSysInt(mlir::Location loc,
+                                       llvm::StringRef varName, mlir::Type ty,
                                        llvm::APInt &val);
   void buildSysModule(const clang::CXXRecordDecl *moduleDecl);
 };

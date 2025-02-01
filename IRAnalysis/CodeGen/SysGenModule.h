@@ -19,7 +19,6 @@
 
 #include "CPPFrontend/CIROptions.h"
 
-#include "SysGenExpr.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
 #include "SysMatcher.h"
@@ -53,15 +52,17 @@ private:
   std::unordered_map<uint32_t, mlir::sys::SIntType> sUnsigendIntTyMap;
   void collectProcess(const clang::CXXRecordDecl *moduleDecl);
   std::unique_ptr<sys::SysMatcher> sysMatcher;
-  std::unique_ptr<sys::SysGenExpr> sysGenExpr;
-  void buildFieldDeclBuiltin(mlir::Location loc, llvm::StringRef varName,
-                             clang::BuiltinType::Kind &kind, llvm::APInt &val);
 
 public:
-  mlir::sys::ConstantOp getConstSysInt(mlir::Location loc,
-                                       llvm::StringRef varName, mlir::Type ty,
+  mlir::sys::ConstantOp getConstSysInt(mlir::Location loc, mlir::Type ty,
                                        llvm::APInt &val);
   void buildSysModule(const clang::CXXRecordDecl *moduleDecl);
+  void buildFieldDecl(const clang::FieldDecl *decl);
+
+  mlir::Type convertType(const clang::QualType type);
+  mlir::Value buildExpr(clang::Expr *expr, mlir::Operation *context);
+  mlir::Value buildBinOp(clang::BinaryOperator *binExpr,
+                         mlir::Operation *context);
 };
 } // namespace sys
 

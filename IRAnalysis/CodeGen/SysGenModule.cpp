@@ -15,7 +15,6 @@
 #include "CIR/Dialect/IR/CIRTypes.h"
 #include "CIRGenBuilder.h"
 #include "CIRGenModule.h"
-#include "SysGenExpr.h"
 #include "SysGenProcess.h"
 #include "SysIR/Dialect/IR/SysAttrs.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
@@ -52,8 +51,7 @@ SysGenModule::SysGenModule(mlir::MLIRContext &context,
                            const cir::CIROptions &CIROptions,
                            clang::DiagnosticsEngine &diags)
     : cir::CIRGenModule(context, astCtx, codeGenOpts, CIROptions, diags),
-      sysMatcher(std::make_unique<sys::SysMatcher>(astCtx)),
-      sysGenExpr(std::make_unique<sys::SysGenExpr>(builder, this, astCtx)) {}
+      sysMatcher(std::make_unique<sys::SysMatcher>(astCtx)) {}
 
 void SysGenModule::collectProcess(const clang::CXXRecordDecl *moduleDecl) {
   for (const auto &method : moduleDecl->methods()) {
@@ -81,41 +79,11 @@ void SysGenModule::collectProcess(const clang::CXXRecordDecl *moduleDecl) {
 }
 
 mlir::sys::ConstantOp SysGenModule::getConstSysInt(mlir::Location loc,
-                                                   llvm::StringRef varName,
                                                    mlir::Type ty,
                                                    llvm::APInt &val) {
   auto ConstantOp = builder.create<mlir::sys::ConstantOp>(
       loc, ty, mlir::sys::IntAttr::get(ty, val));
-  mlir::SymbolTable::setSymbolName(ConstantOp, varName);
-}
-
-void SysGenModule::buildFieldDeclBuiltin(mlir::Location loc,
-                                         llvm::StringRef varName,
-                                         clang::BuiltinType::Kind &kind,
-                                         llvm::APInt &val) {
-  switch (kind) {
-  case clang::BuiltinType::Int:
-  case clang::BuiltinType::Int128:
-  case clang::BuiltinType::Long:
-  case clang::BuiltinType::LongLong: {
-    auto constantOp = builder.getConstInt(loc, llvm::APSInt(val, false));
-    mlir::SymbolTable::setSymbolName(constantOp, varName);
-    break;
-  }
-  case clang::BuiltinType::UInt:
-  case clang::BuiltinType::UInt128:
-  case clang::BuiltinType::ULong:
-  case clang::BuiltinType::ULongLong: {
-    auto constantOp = builder.getConstInt(loc, val);
-    mlir::SymbolTable::setSymbolName(constantOp, varName);
-    break;
-  }
-  case clang::BuiltinType::Bool: {
-    break;
-  }
-  default:
-    break;
-  }
+  return ConstantOp;
 }
 
 void SysGenModule::buildSysModule(const clang::CXXRecordDecl *moduleDecl) {
@@ -126,24 +94,7 @@ void SysGenModule::buildSysModule(const clang::CXXRecordDecl *moduleDecl) {
   builder.setInsertionPointToEnd(theModule.getBody());
 
   for (const auto &field : moduleDecl->fields()) {
-    // TODO : currently only support constant OP. When expr in sysIR is defined,
-    if (auto kindOpt = sysMatcher->matchBuiltinInt(field->getType());
-        kindOpt.has_value()) {
-      if (auto initVal = sysMatcher->matchFieldInitAPInt(*field))
-        buildFieldDeclBuiltin(getLoc(field->getLocation()),
-                              field->getDeclName().getAsString(),
-                              kindOpt.value(), initVal.value());
-    } else if (auto sizeOpt = sysMatcher->matchSysInt(field->getType());
-               sizeOpt != std::nullopt) {
-      if (auto initVal = sysMatcher->matchFieldInitAPInt(*field))
-        getConstSysInt(getLoc(field->getLocation()),
-                       field->getDeclName().getAsString(),
-                       getSSignedIntType(sizeOpt.value()), initVal.value());
-      else {
-        sysGenExpr->buildExpr(field->getInClassInitializer(), theModule);
-      }
-    } else
-      llvm_unreachable("Unsupport type.");
+    buildFieldDecl(field);
   }
 
   collectProcess(moduleDecl);
@@ -177,6 +128,17 @@ mlir::sys::SIntType SysGenModule::getSUSignedIntType(uint32_t size) {
   auto ty = mlir::sys::SIntType::get(builder.getContext(), size, false);
   sUnsigendIntTyMap[size] = ty;
   return ty;
+}
+
+mlir::Type SysGenModule::convertType(const clang::QualType type) {
+  auto plainType = type.getDesugaredType(astCtx);
+  if (llvm::isa<BuiltinType>(plainType)) {
+    return genTypes.ConvertType(plainType);
+  }
+  if (auto sizeOpt = sysMatcher->matchSysInt(plainType)) {
+    return getSSignedIntType(sizeOpt.value());
+  }
+  llvm_unreachable("Unsupported Type.");
 }
 
 SysGenModule::~SysGenModule() {}

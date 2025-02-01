@@ -23,6 +23,7 @@
 
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/DeclCXX.h"
+#include "clang/AST/Stmt.h"
 
 #include "SysGenModule.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
@@ -42,9 +43,12 @@ protected:
 public:
   SysGenProcess(SysGenModule &SGM, mlir::OpBuilder &builder)
       : SGM(SGM), builder(builder) {}
-  mlir::Location getLoc(clang::SourceRange SLoc);
   mlir::sys::ProcDefOP buildProcess(clang::CXXMethodDecl *);
   mlir::sys::ProcRegisterOP buildProcessRegister(mlir::sys::ProcDefOP);
+  void buildCompoundStmt(mlir::Region &parent, clang::CompoundStmt *);
+  void buildDeclStmt(clang::DeclStmt *);
+  void buildStmt(mlir::Region &parent, clang::Stmt *);
+  void buildVarDecl(clang::VarDecl *);
 };
 } // namespace sys
 

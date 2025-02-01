@@ -7,16 +7,14 @@ SC_MODULE(Process) {
     SC_THREAD(emptyProcess1);
   }
 
-  int x = 9;
   sc_dt::sc_int<33> y = 32;
   sc_dt::sc_int<33> z = 32;
-  sc_dt::sc_int<33> t = y + z;
+  sc_dt::sc_int<33> t = y + z + z + y;
   // bool z;
-  void emptyProcess() {
-    // Do nothing.
-  }
+  void emptyProcess() { int x = 0; }
 
   void emptyProcess1(void) {
-    // Do nothing.
+    int x = 2;
+    int y = 2;
   }
 };

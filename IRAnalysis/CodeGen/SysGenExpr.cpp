@@ -1,6 +1,6 @@
 
-#include "SysGenExpr.h"
 #include "CIRGenModule.h"
+#include "SysGenModule.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
 #include "clang/AST/Expr.h"
@@ -16,14 +16,26 @@
 
 namespace sys {
 
-mlir::Value SysGenExpr::buildExpr(clang::Expr *expr, mlir::Operation *context) {
+mlir::Value SysGenModule::buildExpr(clang::Expr *expr,
+                                    mlir::Operation *context) {
   // TODO This function needs a total rewrite.
   if (auto binExpr = llvm::dyn_cast<clang::BinaryOperator>(expr)) {
     return buildBinOp(binExpr, context);
   }
-  if (!llvm::isa<clang::ImplicitCastExpr>(expr))
-    llvm_unreachable("Unsupport expressions");
 
+  if (auto sizeOpt = sysMatcher->matchSysInt(expr->getType());
+      sizeOpt.has_value()) {
+    if (auto initVal = sysMatcher->matchFieldInitAPInt(*expr);
+        initVal.has_value())
+      return getConstSysInt(getLoc(expr->getExprLoc()),
+                            getSSignedIntType(sizeOpt.value()),
+                            initVal.value());
+  }
+
+  if (auto intLit = llvm::dyn_cast<clang::IntegerLiteral>(expr);
+      intLit && sysMatcher->matchBuiltinInt(expr->getType()).has_value()) {
+    return builder.getConstInt(getLoc(expr->getExprLoc()), intLit->getValue());
+  }
   expr = llvm::dyn_cast<clang::ImplicitCastExpr>(expr)->getSubExpr();
 
   if (auto implicitExpr = (llvm::dyn_cast<clang::CXXConstructExpr>(expr))) {
@@ -44,8 +56,8 @@ mlir::Value SysGenExpr::buildExpr(clang::Expr *expr, mlir::Operation *context) {
   }
 }
 
-mlir::Value SysGenExpr::buildBinOp(clang::BinaryOperator *binExpr,
-                                   mlir::Operation *context) {
+mlir::Value SysGenModule::buildBinOp(clang::BinaryOperator *binExpr,
+                                     mlir::Operation *context) {
   auto lhsOp = buildExpr(binExpr->getLHS(), context);
   auto rhsOp = buildExpr(binExpr->getRHS(), context);
   bool containSysOperands = llvm::isa<mlir::sys::SIntType>(lhsOp.getType()) ||
@@ -65,7 +77,7 @@ mlir::Value SysGenExpr::buildBinOp(clang::BinaryOperator *binExpr,
     sBinOpKind = mlir::sys::SBinOpKind::SSub;
   case clang::BinaryOperatorKind::BO_Add: {
     sBinOpKind = mlir::sys::SBinOpKind::SAdd;
-    auto loc = theModule->getLoc((binExpr->getExprLoc()));
+    auto loc = getLoc((binExpr->getExprLoc()));
     return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
   }
   default:

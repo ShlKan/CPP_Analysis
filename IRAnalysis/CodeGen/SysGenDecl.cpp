@@ -19,12 +19,16 @@
 #ifndef MLIR_SYS_DECLARATION_GEN_H
 #define MLIR_SYS_DECLARATION_GEN_H
 
-#include "SysGenDecl.h"
-#include "CIR/Dialect/IR/CIRDialect.h"
+#include "SysGenModule.h"
+#include "mlir/IR/SymbolTable.h"
 
 namespace sys {
 
-mlir::cir::ConstantOp buildConstantOp(const clang::FieldDecl *) {}
+void SysGenModule::buildFieldDecl(const clang::FieldDecl *field) {
+  auto expr = buildExpr(field->getInClassInitializer(), theModule);
+  mlir::SymbolTable::setSymbolName(expr.getDefiningOp(),
+                                   field->getDeclName().getAsString());
+}
 
 } // namespace sys
 

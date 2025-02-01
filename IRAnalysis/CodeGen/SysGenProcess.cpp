@@ -15,11 +15,15 @@
 //===--- SysIR Process generation ---------===//
 
 #include "SysGenProcess.h"
+#include "SysGenModule.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
 #include "mlir/IR/Location.h"
+#include "mlir/IR/Region.h"
 #include "mlir/IR/Types.h"
 #include "clang/AST/DeclCXX.h"
+#include "clang/AST/Stmt.h"
+#include "llvm/ADT/APInt.h"
 
 namespace sys {
 
@@ -30,9 +34,14 @@ mlir::sys::ProcDefOP SysGenProcess::buildProcess(clang::CXXMethodDecl *method) {
   // TODO incorrect type
   llvm::ArrayRef<mlir::Type> argTys{};
   auto procType = mlir::sys::SProcessType::get(builder.getContext(), argTys);
-  return builder.create<mlir::sys::ProcDefOP>(
+  auto process = builder.create<mlir::sys::ProcDefOP>(
       SGM.getLoc(method->getLocation()), method->getDeclName().getAsString(),
       procType);
+  // Body Generation.
+  buildStmt(process.getBody(), method->getBody());
+
+  builder.setInsertionPointToEnd(SGM.getModule().getBody());
+  return process;
 }
 
 mlir::sys::ProcRegisterOP

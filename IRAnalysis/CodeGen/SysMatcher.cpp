@@ -39,8 +39,8 @@ SysMatcher::matchBuiltinInt(const clang::QualType &type) {
 }
 
 std::optional<llvm::APInt>
-SysMatcher::matchFieldInitAPInt(const clang::FieldDecl &fieldDecl) {
-  auto matchResult = match(fieldInitPattern, fieldDecl, astCtx);
+SysMatcher::matchFieldInitAPInt(const clang::Expr &expr) {
+  auto matchResult = match(fieldInitPattern, expr, astCtx);
   if (matchResult.empty())
     return std::nullopt;
   return matchResult.front()

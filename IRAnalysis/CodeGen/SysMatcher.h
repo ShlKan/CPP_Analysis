@@ -49,8 +49,7 @@ public:
   /*
    * Match a FieldDecl's initial value.
    */
-  std::optional<llvm::APInt>
-  matchFieldInitAPInt(const clang::FieldDecl &fieldDecl);
+  std::optional<llvm::APInt> matchFieldInitAPInt(const clang::Expr &expr);
 
   /*
    * Match a statement expression.
@@ -71,8 +70,8 @@ private:
   const TypeMatcher cppBuiltinPattern = builtinType().bind("builtin");
 
   /* The pattern of declaration  */
-  const DeclarationMatcher fieldInitPattern =
-      fieldDecl(hasInClassInitializer(findAll(integerLiteral().bind("init"))));
+  const StatementMatcher fieldInitPattern = implicitCastExpr(hasDescendant(
+      cxxConstructExpr(hasDescendant(integerLiteral().bind("init")))));
 
   /* ImplicitCastExpr  */
   const StatementMatcher implicitCasterPattern =

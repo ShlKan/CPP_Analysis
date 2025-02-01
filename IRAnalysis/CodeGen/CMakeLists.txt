@@ -46,6 +46,7 @@ add_clang_library(clangCIR
   SysGenDecl.cpp
   SysMatcher.cpp
   SysGenExpr.cpp
+  SysGenStmt.cpp
   CIRPasses.cpp
   CIRRecordLayoutBuilder.cpp
   ConstantInitBuilder.cpp

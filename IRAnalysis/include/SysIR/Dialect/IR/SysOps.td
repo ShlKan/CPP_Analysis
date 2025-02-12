@@ -25,18 +25,19 @@ include "mlir/IR/EnumAttr.td"
 include "mlir/IR/SymbolInterfaces.td"
 include "mlir/IR/CommonAttrConstraints.td"
 
+
 class SysOP<string mnemoic, list<Trait> traits=[]> :
     Op<Sys_Dialect, mnemoic, traits>;
 
 def ProcDefOP : SysOP<"ProcDef"> {
     let summary = "Define a process.";
-    
+
     let description = [{
-        This OP corresponds to a definition of a process, 
+        This OP corresponds to a definition of a process,
         which may run in parallel with other processes in the system.
     }];
 
-    let arguments = (ins 
+    let arguments = (ins
         SymbolNameAttr:$proc_name,
         TypeAttrOf<SysProcType>:$proc_type,
         OptionalAttr<DictArrayAttr>:$arg_attrs
@@ -45,7 +46,7 @@ def ProcDefOP : SysOP<"ProcDef"> {
     let results = (outs SysProcType:$result);
 
     let regions = (region AnyRegion:$body);
-    
+
     let builders = [OpBuilder<(ins
         "StringRef":$name,
         "SProcessType":$type
@@ -105,6 +106,7 @@ def SBinOpKind_Sub : I32EnumAttrCase<"SSub", 5, "ssub">;
 def SBinOpKind_And : I32EnumAttrCase<"SAnd", 6, "sand">;
 def SBinOpKind_Xor : I32EnumAttrCase<"SXor", 7, "sxor">;
 def SBinOpKind_Or  : I32EnumAttrCase<"SOr", 8, "sor">;
+def SBinOpKind_Greater  : I32EnumAttrCase<"SGt", 9, "sgt">;
 
 def SBinOpKind : I32EnumAttr<
     "SBinOpKind",
@@ -112,7 +114,7 @@ def SBinOpKind : I32EnumAttr<
     [SBinOpKind_Mul, SBinOpKind_Div, SBinOpKind_Rem,
      SBinOpKind_Add, SBinOpKind_Sub,
      SBinOpKind_And, SBinOpKind_Xor,
-     SBinOpKind_Or]> {
+     SBinOpKind_Or, SBinOpKind_Greater]> {
   let cppNamespace = "::mlir::sys";
 }
 
@@ -148,6 +150,49 @@ def BinOp : SysOP<"sbinop", [Pure,
   }];
 
   let hasVerifier = 1;
+}
+
+
+def CmpOpKind_LT : I32EnumAttrCase<"lt", 1>;
+def CmpOpKind_LE : I32EnumAttrCase<"le", 2>;
+def CmpOpKind_GT : I32EnumAttrCase<"gt", 3>;
+def CmpOpKind_GE : I32EnumAttrCase<"ge", 4>;
+def CmpOpKind_EQ : I32EnumAttrCase<"eq", 5>;
+def CmpOpKind_NE : I32EnumAttrCase<"ne", 6>;
+
+def CmpOpKind : I32EnumAttr<
+    "CmpOpKind",
+    "compare operation kind",
+    [CmpOpKind_LT, CmpOpKind_LE, CmpOpKind_GT,
+     CmpOpKind_GE, CmpOpKind_EQ, CmpOpKind_NE]> {
+  let cppNamespace = "::mlir::sys";
+}
+
+def CmpOp : SysOP<"cmp", [Pure, SameTypeOperands]> {
+
+  let summary = "Compare values two sys values and produce a boolean result";
+  let description = [{
+    `sys.cmp` compares two input operands of same sys type and produces a
+    `cir.bool` result. The kinds of comparison available are:
+    [lt,gt,ge,eq,ne]
+
+    Note that, cir.bool is reused in Sys_Dialect.
+
+    ```mlir
+    %7 = sys.cmp(gt, %1, %2) : i32, !cir.bool
+    ```
+  }];
+
+  // TODO: get more accurate than CIR_AnyType
+  let results = (outs CIR_AnyType:$result);
+  let arguments = (ins Arg<CmpOpKind, "cmp kind">:$kind,
+                       Sys_AnyType:$lhs, Sys_AnyType:$rhs);
+
+  let assemblyFormat = [{
+    `(` $kind `,` $lhs `,` $rhs  `)` `:` type($lhs) `,` type($result) attr-dict
+  }];
+
+  let hasVerifier = 0;
 }
 
 #endif

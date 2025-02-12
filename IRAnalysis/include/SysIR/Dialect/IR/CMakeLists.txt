@@ -1,10 +1,10 @@
 set(LLVM_TARGET_DEFINITIONS SysOps.td)
 mlir_tablegen(SysOps.h.inc -gen-op-decls)
 mlir_tablegen(SysOps.cpp.inc -gen-op-defs)
-mlir_tablegen(SysOpsTypes.h.inc -gen-typedef-decls)
-mlir_tablegen(SysOpsTypes.cpp.inc -gen-typedef-defs)
-mlir_tablegen(SysOpsDialect.h.inc -gen-dialect-decls)
-mlir_tablegen(SysOpsDialect.cpp.inc -gen-dialect-defs)
+mlir_tablegen(SysOpsTypes.h.inc -gen-typedef-decls -typedefs-dialect=sys)
+mlir_tablegen(SysOpsTypes.cpp.inc -gen-typedef-defs -typedefs-dialect=sys)
+mlir_tablegen(SysOpsDialect.h.inc -gen-dialect-decls -dialect=sys)
+mlir_tablegen(SysOpsDialect.cpp.inc -gen-dialect-defs -dialect=sys)
 add_public_tablegen_target(MLIRSysOpsIncGen)
 
 # Generate extra headers for custom enum and attrs.

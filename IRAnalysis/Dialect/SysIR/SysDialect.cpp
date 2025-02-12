@@ -1,6 +1,7 @@
 //===- SysDialect.cpp - MLIR Sys ops implementation -----------------------===//
 
 #include "SysIR/Dialect/IR/SysDialect.h"
+#include "CIR/Dialect/IR/CIRTypes.h"
 #include "mlir/IR/Attributes.h"
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/OpImplementation.h"

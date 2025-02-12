@@ -21,11 +21,15 @@
 
 #include "SysGenModule.h"
 #include "mlir/IR/SymbolTable.h"
+#include "mlir/IR/Value.h"
+#include "clang/AST/DeclBase.h"
+#include "llvm/ADT/ScopedHashTable.h"
 
 namespace sys {
 
 void SysGenModule::buildFieldDecl(const clang::FieldDecl *field) {
-  auto expr = buildExpr(field->getInClassInitializer(), theModule);
+  llvm::ScopedHashTable<const clang::Decl *, mlir::Value> hashTable;
+  auto expr = buildExpr(field->getInClassInitializer(), theModule, hashTable);
   mlir::SymbolTable::setSymbolName(expr.getDefiningOp(),
                                    field->getDeclName().getAsString());
 }

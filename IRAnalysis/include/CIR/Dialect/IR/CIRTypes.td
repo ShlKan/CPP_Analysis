@@ -561,7 +561,7 @@ def CIR_AnyType : AnyTypeOf<[
   CIR_IntType, CIR_PointerType, CIR_DataMemberType, CIR_MethodType,
   CIR_BoolType, CIR_ArrayType, CIR_VectorType, CIR_FuncType, CIR_VoidType,
   CIR_StructType, CIR_ExceptionType, CIR_AnyFloat, CIR_FP16, CIR_BFloat16,
-  CIR_ComplexType
+  CIR_ComplexType, I1
 ]>;
 
 #endif // MLIR_CIR_DIALECT_CIR_TYPES

@@ -1,11 +1,14 @@
 
+#include "CIR/Dialect/IR/CIRTypes.h"
 #include "CIRGenModule.h"
 #include "SysGenModule.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
+#include "clang/AST/DeclBase.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/ExprCXX.h"
 #include "clang/AST/OperationKinds.h"
+#include "clang/Basic/OperatorKinds.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -16,11 +19,12 @@
 
 namespace sys {
 
-mlir::Value SysGenModule::buildExpr(clang::Expr *expr,
-                                    mlir::Operation *context) {
+mlir::Value SysGenModule::buildExpr(
+    clang::Expr *expr, mlir::Operation *context,
+    llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable) {
   // TODO This function needs a total rewrite.
   if (auto binExpr = llvm::dyn_cast<clang::BinaryOperator>(expr)) {
-    return buildBinOp(binExpr, context);
+    return buildBinOp(binExpr, context, symTable);
   }
 
   if (auto sizeOpt = sysMatcher->matchSysInt(expr->getType());
@@ -36,13 +40,39 @@ mlir::Value SysGenModule::buildExpr(clang::Expr *expr,
       intLit && sysMatcher->matchBuiltinInt(expr->getType()).has_value()) {
     return builder.getConstInt(getLoc(expr->getExprLoc()), intLit->getValue());
   }
+
+  if (auto cxxOpCallExpr = llvm::dyn_cast<clang::CXXOperatorCallExpr>(expr)) {
+    if (cxxOpCallExpr->isComparisonOp(
+            clang::OverloadedOperatorKind::OO_Greater)) {
+      auto lhsOp = buildExpr(cxxOpCallExpr->getArg(0), context, symTable);
+      auto rhsOp = buildExpr(cxxOpCallExpr->getArg(1), context, symTable);
+      auto sCmpOpKind = mlir::sys::CmpOpKind::gt;
+      auto boolTy = mlir::cir::BoolType::get(builder.getContext());
+      return builder.create<mlir::sys::CmpOp>(getLoc(expr->getExprLoc()),
+                                              boolTy, sCmpOpKind, lhsOp, rhsOp);
+    }
+  }
+
   expr = llvm::dyn_cast<clang::ImplicitCastExpr>(expr)->getSubExpr();
 
   if (auto implicitExpr = (llvm::dyn_cast<clang::CXXConstructExpr>(expr))) {
     for (auto &child : implicitExpr->children()) {
-      return buildExpr(llvm::dyn_cast<clang::Expr>(child), context);
+      return buildExpr(llvm::dyn_cast<clang::Expr>(child), context, symTable);
     }
   }
+  if (auto declRefExpr = sysMatcher->matchdeclRef(expr);
+      declRefExpr.has_value()) {
+    auto varName = declRefExpr.value()->getDecl()->getDeclName();
+
+    if (symTable.count(declRefExpr.value()->getDecl()))
+      return symTable.lookup(declRefExpr.value()->getDecl());
+    if (auto op =
+            mlir::SymbolTable::lookupSymbolIn(context, varName.getAsString())) {
+      return op->getResults().front();
+    }
+    llvm_unreachable("The variable is not found");
+  }
+
   if (auto memExpr = sysMatcher->matchMemExpr(expr); memExpr.has_value()) {
     auto memExpr1 = llvm::dyn_cast<clang::ImplicitCastExpr>(
                         *memExpr.value()->children().begin())
@@ -56,10 +86,11 @@ mlir::Value SysGenModule::buildExpr(clang::Expr *expr,
   }
 }
 
-mlir::Value SysGenModule::buildBinOp(clang::BinaryOperator *binExpr,
-                                     mlir::Operation *context) {
-  auto lhsOp = buildExpr(binExpr->getLHS(), context);
-  auto rhsOp = buildExpr(binExpr->getRHS(), context);
+mlir::Value SysGenModule::buildBinOp(
+    clang::BinaryOperator *binExpr, mlir::Operation *context,
+    llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable) {
+  auto lhsOp = buildExpr(binExpr->getLHS(), context, symTable);
+  auto rhsOp = buildExpr(binExpr->getRHS(), context, symTable);
   bool containSysOperands = llvm::isa<mlir::sys::SIntType>(lhsOp.getType()) ||
                             llvm::isa<mlir::sys::SIntType>(rhsOp.getType());
 
@@ -68,16 +99,23 @@ mlir::Value SysGenModule::buildBinOp(clang::BinaryOperator *binExpr,
   }
 
   mlir::sys::SBinOpKind sBinOpKind;
+  mlir::sys::CmpOpKind sCmpOpKind;
+  auto loc = getLoc((binExpr->getExprLoc()));
   switch (binExpr->getOpcode()) {
-  case clang::BinaryOperatorKind::BO_Mul:
+  case clang::BinaryOperatorKind::BO_Mul: {
     sBinOpKind = mlir::sys::SBinOpKind::SMul;
-  case clang::BinaryOperatorKind::BO_Div:
+    return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
+  }
+  case clang::BinaryOperatorKind::BO_Div: {
     sBinOpKind = mlir::sys::SBinOpKind::SDiv;
-  case clang::BinaryOperatorKind::BO_Sub:
+    return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
+  }
+  case clang::BinaryOperatorKind::BO_Sub: {
     sBinOpKind = mlir::sys::SBinOpKind::SSub;
+    return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
+  }
   case clang::BinaryOperatorKind::BO_Add: {
     sBinOpKind = mlir::sys::SBinOpKind::SAdd;
-    auto loc = getLoc((binExpr->getExprLoc()));
     return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
   }
   default:

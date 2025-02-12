@@ -540,6 +540,7 @@ public:
     auto ConstantOp = create<mlir::sys::ConstantOp>(
         loc, ty, mlir::sys::IntAttr::get(ty, val));
     mlir::SymbolTable::setSymbolName(ConstantOp, varName);
+    return ConstantOp;
   }
 
   mlir::cir::ConstantOp getConstInt(mlir::Location loc, mlir::Type t,

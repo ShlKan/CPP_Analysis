@@ -56,4 +56,12 @@ SysMatcher::matchMemExpr(const clang::Stmt *stmt) {
   return matchResult.front().getNodeAs<clang::MemberExpr>("memExpr");
 }
 
+std::optional<const clang::DeclRefExpr *>
+SysMatcher::matchdeclRef(const clang::Stmt *stmt) {
+  auto matchResult = match(declRefPattern, *stmt, astCtx);
+  if (matchResult.empty())
+    return std::nullopt;
+  return matchResult.front().getNodeAs<clang::DeclRefExpr>("declRefExpr");
+}
+
 } // namespace sys

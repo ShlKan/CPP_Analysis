@@ -5,6 +5,7 @@
 #include "SysGenModule.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 
+#include "mlir/Dialect/ControlFlow/IR/ControlFlow.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
@@ -28,6 +29,7 @@ void SysIRGenerator::Initialize(clang::ASTContext &Context) {
   mlirCtx = std::make_unique<mlir::MLIRContext>();
   mlirCtx->getOrLoadDialect<mlir::sys::SysDialect>();
   mlirCtx->getOrLoadDialect<mlir::cir::CIRDialect>();
+  mlirCtx->getLoadedDialect<mlir::cf::ControlFlowDialect>();
   clang::CodeGenOptions codeOpts;
   sysMG = std::make_unique<SysGenModule>(*mlirCtx, *astCtx, codeOpts, cirOpts,
                                          Diags);

@@ -57,6 +57,12 @@ public:
   std::optional<const clang::MemberExpr *>
   matchMemExpr(const clang::Stmt *stmt);
 
+  /*
+   * Match a statement expression.
+   */
+  std::optional<const clang::DeclRefExpr *>
+  matchdeclRef(const clang::Stmt *stmt);
+
 private:
   clang::ASTContext &astCtx;
   /* The pattern of SystemC integer Type. */
@@ -76,6 +82,10 @@ private:
   /* ImplicitCastExpr  */
   const StatementMatcher implicitCasterPattern =
       findAll(memberExpr(findAll(memberExpr().bind("memExpr"))));
+
+  /* ImplicitCastExpr  */
+  const StatementMatcher declRefPattern =
+      findAll(declRefExpr().bind("declRefExpr"));
 };
 } // namespace sys
 

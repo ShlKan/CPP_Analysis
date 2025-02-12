@@ -12,6 +12,9 @@ include "SysIR/Dialect/IR/SysDialect.td"
 include "mlir/IR/AttrTypeBase.td"
 include "mlir/IR/EnumAttr.td"
 include "mlir/Interfaces/DataLayoutInterfaces.td"
+include "mlir/IR/CommonAttrConstraints.td"
+include "CIR/Dialect/IR/CIRTypes.td"
+
 
 //===----------------------------------------------------------------------===//
 // Sys Type
@@ -90,9 +93,12 @@ def SysProcType : Sys_Type<"SProcess", "s_proc"> {
 
 }
 
+
+
 def Sys_AnyType : AnyTypeOf<[
-  Sys_IntType
+  Sys_IntType, CIR_BoolType
 ]>;
+
 
 #endif
 

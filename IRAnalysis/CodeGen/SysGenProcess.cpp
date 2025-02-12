@@ -24,6 +24,7 @@
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Stmt.h"
 #include "llvm/ADT/APInt.h"
+#include "llvm/ADT/ScopedHashTable.h"
 
 namespace sys {
 
@@ -32,6 +33,8 @@ namespace sys {
 
 mlir::sys::ProcDefOP SysGenProcess::buildProcess(clang::CXXMethodDecl *method) {
   // TODO incorrect type
+  llvm::ScopedHashTableScope<const clang::Decl *, mlir::Value> processScope(
+      symbolTable);
   llvm::ArrayRef<mlir::Type> argTys{};
   auto procType = mlir::sys::SProcessType::get(builder.getContext(), argTys);
   auto process = builder.create<mlir::sys::ProcDefOP>(
@@ -39,7 +42,6 @@ mlir::sys::ProcDefOP SysGenProcess::buildProcess(clang::CXXMethodDecl *method) {
       procType);
   // Body Generation.
   buildStmt(process.getBody(), method->getBody());
-
   builder.setInsertionPointToEnd(SGM.getModule().getBody());
   return process;
 }

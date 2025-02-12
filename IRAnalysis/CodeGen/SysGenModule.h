@@ -5,11 +5,13 @@
 #define MLIR_SYS_MODULE_GEN_H
 
 #include "clang/AST/ASTContext.h"
+#include "clang/AST/DeclBase.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/Type.h"
 #include "clang/Basic/Diagnostic.h"
 #include "llvm/ADT/APSInt.h"
+#include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/SmallVector.h"
 #include <cstdint>
 #include <map>
@@ -60,9 +62,12 @@ public:
   void buildFieldDecl(const clang::FieldDecl *decl);
 
   mlir::Type convertType(const clang::QualType type);
-  mlir::Value buildExpr(clang::Expr *expr, mlir::Operation *context);
-  mlir::Value buildBinOp(clang::BinaryOperator *binExpr,
-                         mlir::Operation *context);
+  mlir::Value
+  buildExpr(clang::Expr *expr, mlir::Operation *context,
+            llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable);
+  mlir::Value
+  buildBinOp(clang::BinaryOperator *binExpr, mlir::Operation *context,
+             llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable);
 };
 } // namespace sys
 

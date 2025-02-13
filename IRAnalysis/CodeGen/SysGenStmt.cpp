@@ -12,6 +12,7 @@
 #include "mlir/IR/Region.h"
 #include "mlir/IR/SymbolTable.h"
 #include "mlir/IR/Types.h"
+#include "mlir/IR/Value.h"
 #include "mlir/IR/ValueRange.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclBase.h"
@@ -20,6 +21,7 @@
 #include "clang/AST/Stmt.h"
 #include "clang/AST/Type.h"
 #include "llvm/ADT/APInt.h"
+#include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/DXILABI.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -44,6 +46,8 @@ void SysGenProcess::buildStmt(mlir::Region &parent, clang::Stmt *stmt) {
 
 mlir::Block *SysGenProcess::buildCompoundStmt(mlir::Region &parent,
                                               clang::CompoundStmt *stmt) {
+  llvm::ScopedHashTableScope<const clang::Decl *, mlir::Value> varScope(
+      symbolTable);
   auto savedPoint = builder.saveInsertionPoint();
   auto block = builder.createBlock(&parent);
   builder.setInsertionPointToStart(block);
@@ -90,6 +94,8 @@ void SysGenProcess::buildIfstmt(clang::IfStmt *ifStmt) {
   mlir::Block *trueBlock, *falseBlock;
   if (ifStmt->getThen()->getStmtClass() !=
       clang::Stmt::StmtClass::CompoundStmtClass) {
+    llvm::ScopedHashTableScope<const clang::Decl *, mlir::Value> varScope(
+        symbolTable);
     auto currentBlk = builder.getBlock();
     trueBlock = builder.createBlock(builder.getBlock()->getParent());
     builder.setInsertionPointToStart(trueBlock);
@@ -106,6 +112,8 @@ void SysGenProcess::buildIfstmt(clang::IfStmt *ifStmt) {
                                 clang::Stmt::StmtClass::CompoundStmtClass) {
     falseBlock = builder.createBlock(builder.getBlock()->getParent());
     if (ifStmt->getElse()) {
+      llvm::ScopedHashTableScope<const clang::Decl *, mlir::Value> varScope(
+          symbolTable);
       auto currentBlk = builder.getBlock();
       builder.setInsertionPointToStart(falseBlock);
       auto parent = builder.getBlock()->getParent();

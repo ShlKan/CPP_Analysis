@@ -1,5 +1,8 @@
 
+#include "CIR/Dialect/IR/CIRDialect.h"
+#include "CIR/Dialect/IR/CIROpsEnums.h"
 #include "CIR/Dialect/IR/CIRTypes.h"
+#include "CIRGenBuilder.h"
 #include "CIRGenModule.h"
 #include "SysGenModule.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
@@ -17,11 +20,17 @@
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/SymbolTable.h"
 
+#include "CIRGenFunction.h"
+
+namespace cir {
+class CIRGenFunction;
+}
 namespace sys {
 
 mlir::Value SysGenModule::buildExpr(
     clang::Expr *expr, mlir::Operation *context,
     llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable) {
+
   // TODO This function needs a total rewrite.
   if (auto binExpr = llvm::dyn_cast<clang::BinaryOperator>(expr)) {
     return buildBinOp(binExpr, context, symTable);
@@ -53,7 +62,8 @@ mlir::Value SysGenModule::buildExpr(
     }
   }
 
-  expr = llvm::dyn_cast<clang::ImplicitCastExpr>(expr)->getSubExpr();
+  if (auto implicitExpr = llvm::dyn_cast_or_null<clang::ImplicitCastExpr>(expr))
+    expr = implicitExpr->getSubExpr();
 
   if (auto implicitExpr = (llvm::dyn_cast<clang::CXXConstructExpr>(expr))) {
     for (auto &child : implicitExpr->children()) {
@@ -89,37 +99,90 @@ mlir::Value SysGenModule::buildExpr(
 mlir::Value SysGenModule::buildBinOp(
     clang::BinaryOperator *binExpr, mlir::Operation *context,
     llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable) {
+
+  if (binExpr->getOpcode() == clang::BinaryOperatorKind::BO_Assign) {
+    auto rhsOp = buildExpr(binExpr->getRHS(), context, symTable);
+    auto declRef =
+        llvm::dyn_cast_or_null<clang::DeclRefExpr>(binExpr->getLHS());
+    if (symTable.count(declRef->getDecl())) {
+      symTable.insert(declRef->getDecl(), rhsOp);
+    } else
+      mlir::SymbolTable::setSymbolName(
+          rhsOp.getDefiningOp(),
+          declRef->getDecl()->getDeclName().getAsString());
+    return rhsOp;
+  }
   auto lhsOp = buildExpr(binExpr->getLHS(), context, symTable);
   auto rhsOp = buildExpr(binExpr->getRHS(), context, symTable);
-  bool containSysOperands = llvm::isa<mlir::sys::SIntType>(lhsOp.getType()) ||
-                            llvm::isa<mlir::sys::SIntType>(rhsOp.getType());
+  bool bothSysOperands = llvm::isa<mlir::sys::SIntType>(lhsOp.getType()) ||
+                         llvm::isa<mlir::sys::SIntType>(rhsOp.getType());
 
-  if (!containSysOperands) {
-    llvm_unreachable("CIROp is not supported.");
+  if (bothSysOperands) {
+    mlir::sys::SBinOpKind sBinOpKind;
+    mlir::sys::CmpOpKind sCmpOpKind;
+    auto loc = getLoc((binExpr->getExprLoc()));
+    switch (binExpr->getOpcode()) {
+    case clang::BinaryOperatorKind::BO_Mul: {
+      sBinOpKind = mlir::sys::SBinOpKind::SMul;
+      break;
+    }
+    case clang::BinaryOperatorKind::BO_Div: {
+      sBinOpKind = mlir::sys::SBinOpKind::SDiv;
+      break;
+    }
+    case clang::BinaryOperatorKind::BO_Sub: {
+      sBinOpKind = mlir::sys::SBinOpKind::SSub;
+      break;
+    }
+    case clang::BinaryOperatorKind::BO_Add: {
+      sBinOpKind = mlir::sys::SBinOpKind::SAdd;
+      break;
+    }
+    default:
+      llvm_unreachable("Unsupported Binary Operator.");
+    }
+    return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
   }
 
-  mlir::sys::SBinOpKind sBinOpKind;
-  mlir::sys::CmpOpKind sCmpOpKind;
-  auto loc = getLoc((binExpr->getExprLoc()));
-  switch (binExpr->getOpcode()) {
-  case clang::BinaryOperatorKind::BO_Mul: {
-    sBinOpKind = mlir::sys::SBinOpKind::SMul;
-    return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
-  }
-  case clang::BinaryOperatorKind::BO_Div: {
-    sBinOpKind = mlir::sys::SBinOpKind::SDiv;
-    return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
-  }
-  case clang::BinaryOperatorKind::BO_Sub: {
-    sBinOpKind = mlir::sys::SBinOpKind::SSub;
-    return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
-  }
-  case clang::BinaryOperatorKind::BO_Add: {
-    sBinOpKind = mlir::sys::SBinOpKind::SAdd;
-    return builder.create<mlir::sys::BinOp>(loc, sBinOpKind, lhsOp, rhsOp);
-  }
-  default:
-    llvm_unreachable("Unsupported Binary Operator.");
+  bool bothCIROperands = llvm::isa<mlir::cir::IntType>(lhsOp.getType()) ||
+                         llvm::isa<mlir::cir::IntType>(rhsOp.getType());
+  if (bothCIROperands) {
+
+    mlir::cir::BinOpKind cBinOpKind;
+    mlir::cir::CmpOpKind cCmpOpKind;
+    bool isBinOp = false;
+    switch (binExpr->getOpcode()) {
+    case clang::BinaryOperatorKind::BO_Add:
+      isBinOp = true;
+      cBinOpKind = mlir::cir::BinOpKind::Add;
+      break;
+    case clang::BinaryOperatorKind::BO_GE:
+      isBinOp = false;
+      cCmpOpKind = mlir::cir::CmpOpKind::ge;
+      break;
+    case clang::BinaryOperatorKind::BO_GT:
+      isBinOp = false;
+      cCmpOpKind = mlir::cir::CmpOpKind::gt;
+      break;
+    case clang::BinaryOperatorKind::BO_LE:
+      isBinOp = false;
+      cCmpOpKind = mlir::cir::CmpOpKind::le;
+      break;
+    case clang::BinaryOperatorKind::BO_LT:
+      isBinOp = false;
+      cCmpOpKind = mlir::cir::CmpOpKind::lt;
+      break;
+    default:
+      llvm_unreachable("Unsupported Binary Operator.");
+    }
+    if (isBinOp) {
+      return builder.createBinop(lhsOp, cBinOpKind, rhsOp);
+    } else {
+      auto loc = getLoc((binExpr->getExprLoc()));
+      auto boolTy = mlir::cir::BoolType::get(builder.getContext());
+      return builder.create<mlir::cir::CmpOp>(loc, boolTy, cCmpOpKind, lhsOp,
+                                              rhsOp);
+    }
   }
 }
 

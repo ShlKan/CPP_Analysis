@@ -6,7 +6,7 @@ SC_MODULE(Process) {
     SC_THREAD(emptyProcess);
     SC_THREAD(emptyProcess1);
   }
-
+  int ii = 0;
   sc_dt::sc_int<33> y = 32;
   sc_dt::sc_int<33> z = 32;
   sc_dt::sc_int<33> t = y + z + z + y;
@@ -31,6 +31,9 @@ SC_MODULE(Process) {
       sc_dt::sc_int<8> x = 0;
       sc_dt::sc_int<8> y = 0;
       sc_dt::sc_int<8> z = x + y;
+    }
+    for (int i = 0; i < 10; i = i + 1) {
+      sc_dt::sc_int<8> k = 7;
     }
   }
 };

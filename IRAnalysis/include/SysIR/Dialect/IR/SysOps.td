@@ -19,6 +19,7 @@ include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/LoopLikeInterface.td"
 include "mlir/Interfaces/MemorySlotInterfaces.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
+include "mlir/Interfaces/ControlFlowInterfaces.td"
 
 include "mlir/IR/BuiltinAttributeInterfaces.td"
 include "mlir/IR/EnumAttr.td"
@@ -195,4 +196,217 @@ def CmpOp : SysOP<"cmp", [Pure, SameTypeOperands]> {
   let hasVerifier = 0;
 }
 
+
+//===----------------------------------------------------------------------===//
+// ConditionOp
+// It follows the idea of SCF, but we use the type.
+// in Dialect Sys. It can be used to represent for-loop, while-loop, and do-while-loop.
+//===----------------------------------------------------------------------===//
+
+def LoopOp : SysOP<"loop",
+    [DeclareOpInterfaceMethods<RegionBranchOpInterface,
+        ["getEntrySuccessorOperands"]>,
+     DeclareOpInterfaceMethods<LoopLikeOpInterface,
+        ["getRegionIterArgs", "getYieldedValuesMutable"]>,
+     RecursiveMemoryEffects, SingleBlock]> {
+  let summary = "a generic loop";
+  let description = [{
+    This operation represents a generic loop that keeps
+    iterating as long as a condition is satisfied. There is no restriction on
+    the complexity of the condition. It consists of two regions (with single
+    block each): "before" region and "after" region.
+
+    The "before" region terminates with a special operation, `sys.condition`,
+    that accepts as its first operand an `CIR_BoolType` value indicating whether to
+    proceed to the "after" region (value is `true`) or not. The two regions
+    communicate by means of region arguments. Initially, the "before" region
+    accepts as arguments the operands of the `sys.loop` operation and uses them
+    to evaluate the condition. It forwards the trailing, non-condition operands
+    of the `sys.condition` terminator either to the "after" region if the
+    control flow is transferred there or to results of the `sys.loop` operation
+    otherwise. The "after" region takes as arguments the values produced by the
+    "before" region and uses `sys.yield` to supply new arguments for the
+    "before" region, into which it transfers the control flow unconditionally.
+
+    A simple "for" loop:
+    ```C++
+    for (int i = 0 ; i < 10 ; i ++ ) {
+      y = x * i;
+    }
+    ```
+    can be represented as follows.
+
+    ```mlir
+    %i = sys.const (0)
+    %res = scf.loop (%arg1 = %i) : (i32) -> i32 {
+      // "Before" region.
+      %condition = cir.binop(<, %arg1, 10)
+      sys.condition(%condition) %arg1 : i32
+    } do {
+      ^bb0(%arg2: i32) :
+      %y = cir.binop(*, %x, %arg2)
+      %i = cir.binop(+, %arg2, 1)
+      sys.yield %i : i32
+    }
+    ```
+
+    A simple "while" loop can be represented as follows.
+    ```mlir
+      %res = sys.loop (%arg1 = %init1) : (f32) -> f32 {
+      // "Before" region.
+      // In a "while" loop, this region computes the condition.
+      %condition = call @evaluate_condition(%arg1) : (f32) -> i1
+
+      // Forward the argument (as result or "after" region argument).
+      sys.condition(%condition) %arg1 : f32
+
+    } do {
+    ^bb0(%arg2: f32):
+      // "After" region.
+      // In a "while" loop, this region is the loop body.
+      %next = call @payload(%arg2) : (f32) -> f32
+
+      // Forward the new value to the "before" region.
+      // The operand types must match the types of the `sys.while` operands.
+      sys.yield %next : f32
+    }
+    ```
+
+    A simple "do-while" loop can be represented by reducing the "after" block
+    to a simple forwarder.
+
+    ```mlir
+    %res = sys.loop (%arg1 = %init1) : (f32) -> f32 {
+      // "Before" region.
+      // In a "do-while" loop, this region contains the loop body.
+      %next = call @payload(%arg1) : (f32) -> f32
+
+      // And also evaluates the condition.
+      %condition = call @evaluate_condition(%arg1) : (f32) -> i1
+
+      // Loop through the "after" region.
+      sys.condition(%condition) %next : f32
+
+    } do {
+    ^bb0(%arg2: f32):
+      // "After" region.
+      // Forwards the values back to "before" region unmodified.
+      sys.yield %arg2 : f32
+    }
+  ```
+  Note that the types of region arguments need not to match with each other.
+    The op expects the operand types to match with argument types of the
+    "before" region; the result types to match with the trailing operand types
+    of the terminator of the "before" region, and with the argument types of the
+    "after" region. The following scheme can be used to share the results of
+    some operations executed in the "before" region with the "after" region,
+    avoiding the need to recompute them.
+
+    ```mlir
+    %res = sys.loop (%arg1 = %init1) : (f32) -> i64 {
+      // One can perform some computations, e.g., necessary to evaluate the
+      // condition, in the "before" region and forward their results to the
+      // "after" region.
+      %shared = call @shared_compute(%arg1) : (f32) -> i64
+
+      // Evaluate the condition.
+      %condition = call @evaluate_condition(%arg1, %shared) : (f32, i64) -> i1
+
+      // Forward the result of the shared computation to the "after" region.
+      // The types must match the arguments of the "after" region as well as
+      // those of the `sys.while` results.
+      sys.condition(%condition) %shared : i64
+
+    } do {
+    ^bb0(%arg2: i64) {
+      // Use the partial result to compute the rest of the payload in the
+      // "after" region.
+      %res = call @payload(%arg2) : (i64) -> f32
+
+      // Forward the new value to the "before" region.
+      // The operand types must match the types of the `sys.loop` operands.
+      sys.yield %res : f32
+    }
+    }
+    ```
+
+  }];
+  let arguments = (ins Variadic<AnyType>:$inits);
+  let results = (outs Variadic<AnyType>:$results);
+  let regions = (region SizedRegion<1>:$before, SizedRegion<1>:$after);
+
+  let builders = [
+    OpBuilder<(ins "TypeRange":$resultTypes, "ValueRange":$operands,
+      "function_ref<void(OpBuilder &, Location, ValueRange)>":$beforeBuilder,
+      "function_ref<void(OpBuilder &, Location, ValueRange)>":$afterBuilder)>
+  ];
+
+  let extraClassDeclaration = [{
+    using BodyBuilderFn =
+        function_ref<void(OpBuilder &, Location, ValueRange)>;
+
+    ConditionOp getConditionOp();
+    YieldOp getYieldOp();
+
+    Block::BlockArgListType getBeforeArguments();
+    Block::BlockArgListType getAfterArguments();
+    Block *getBeforeBody() { return &getBefore().front(); }
+    Block *getAfterBody() { return &getAfter().front(); }
+  }];
+
+  let hasCanonicalizer = 1;
+//  let hasCustomAssemblyFormat = 1;
+  let hasVerifier = 1;
+}
+
+//===----------------------------------------------------------------------===//
+// ConditionOp
+//===----------------------------------------------------------------------===//
+
+def ConditionOp : SysOP<"condition", [
+  HasParent<"LoopOp">,
+  DeclareOpInterfaceMethods<RegionBranchTerminatorOpInterface,
+    ["getSuccessorRegions"]>,
+  Pure,
+  Terminator
+]> {
+  let summary = "loop continuation condition";
+  let description = [{
+    This operation accepts the continuation (i.e., inverse of exit) condition
+    of the `sys.loop` construct. If its first argument is true, the "after"
+    region of `sys.loop` is executed, with the remaining arguments forwarded
+    to the entry block of the region. Otherwise, the loop terminates.
+  }];
+
+  let arguments = (ins CIR_BoolType:$condition, Variadic<AnyType>:$args);
+
+  let assemblyFormat =
+      [{ `(` $condition `)` attr-dict ($args^ `:` type($args))? }];
+}
+
+//===----------------------------------------------------------------------===//
+// YieldOp
+//===----------------------------------------------------------------------===//
+
+def YieldOp : SysOP<"yield", [Pure, ReturnLike, Terminator,
+    ParentOneOf<["LoopOp"]>]> {
+  let summary = "loop yield and termination operation";
+  let description = [{
+    The `scf.yield` operation yields an SSA value from the SCF dialect op region and
+    terminates the regions. The semantics of how the values are yielded is
+    defined by the parent operation.
+    If `scf.yield` has any operands, the operands must match the parent
+    operation's results.
+    If the parent operation defines no values, then the `scf.yield` may be
+    left out in the custom syntax and the builders will insert one implicitly.
+    Otherwise, it has to be present in the syntax to indicate which values are
+    yielded.
+  }];
+
+  let arguments = (ins Variadic<AnyType>:$results);
+  let builders = [OpBuilder<(ins), [{ /* nothing to do */ }]>];
+
+  //let assemblyFormat =
+  //    [{  attr-dict ($results^ `:` type($results))? }];
+}
 #endif

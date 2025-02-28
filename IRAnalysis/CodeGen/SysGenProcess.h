@@ -34,7 +34,7 @@ namespace sys {
 class SysGenProcess {
 private:
   SysGenModule &SGM;
-  mlir::OpBuilder &builder;
+  cir::CIRGenBuilderTy &builder;
   using SymTableTy = llvm::ScopedHashTable<const clang::Decl *, mlir::Value>;
   SymTableTy symbolTable;
 
@@ -43,7 +43,7 @@ protected:
   SysGenProcess &operator=(SysGenProcess &) = delete;
 
 public:
-  SysGenProcess(SysGenModule &SGM, mlir::OpBuilder &builder)
+  SysGenProcess(SysGenModule &SGM, cir::CIRGenBuilderTy &builder)
       : SGM(SGM), builder(builder) {}
   mlir::sys::ProcDefOP buildProcess(clang::CXXMethodDecl *);
   mlir::sys::ProcRegisterOP buildProcessRegister(mlir::sys::ProcDefOP);
@@ -52,7 +52,8 @@ public:
   void buildDeclStmt(clang::DeclStmt *);
   void buildStmt(mlir::Region &parent, clang::Stmt *stmt);
   void buildVarDecl(clang::VarDecl *);
-  void buildIfstmt(clang::IfStmt *ifStmt);
+  void buildIfStmt(clang::IfStmt *ifStmt);
+  void buildLoopStmt(clang::ForStmt *loopStmt);
 };
 } // namespace sys
 

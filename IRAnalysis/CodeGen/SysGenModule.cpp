@@ -30,6 +30,7 @@
 #include "clang/AST/Expr.h"
 #include "clang/AST/Type.h"
 
+#include "CIRGenFunction.h"
 #include "clang/Basic/LLVM.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/APSInt.h"
@@ -105,10 +106,14 @@ void SysGenModule::buildSysModule(const clang::CXXRecordDecl *moduleDecl) {
                        return procName->getString() ==
                               method->getDeclName().getAsString();
                      }) != processNames.end()) {
+      cir::CIRGenFunction cFunGen(*this, builder);
+      CurCGF = &cFunGen;
       auto proc = genProcess.buildProcess(method);
       processOPs.push_back(proc);
+      CurCGF = nullptr;
     }
   }
+
   for (const auto &procOP : processOPs)
     genProcess.buildProcessRegister(procOP);
   theModule->dump();

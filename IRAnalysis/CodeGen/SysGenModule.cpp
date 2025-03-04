@@ -116,7 +116,7 @@ void SysGenModule::buildSysModule(const clang::CXXRecordDecl *moduleDecl) {
 
   for (const auto &procOP : processOPs)
     genProcess.buildProcessRegister(procOP);
-  theModule->dump();
+  theModule.print(llvm::outs());
 }
 
 mlir::sys::SIntType SysGenModule::getSSignedIntType(uint32_t size) {

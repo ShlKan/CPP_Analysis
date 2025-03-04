@@ -151,12 +151,10 @@ llvm::SmallVector<clang::Decl *> getRefDecls(clang::Expr *expr) {
             llvm::dyn_cast_or_null<ImplicitCastExpr>(binOp->getLHS())) {
       if (auto declRef =
               llvm::dyn_cast<clang::DeclRefExpr>(implicitExpr->getSubExpr())) {
-        binOp->getLHS()->dumpColor();
         decls.push_back(declRef->getDecl());
       }
     }
     if (auto declRef = llvm::dyn_cast<clang::DeclRefExpr>(binOp->getRHS())) {
-      binOp->getRHS()->dumpColor();
       decls.push_back(declRef->getDecl());
     }
   } else {

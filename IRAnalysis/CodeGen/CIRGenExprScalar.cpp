@@ -11,18 +11,18 @@
 //===----------------------------------------------------------------------===//
 
 #include "Address.h"
+#include "CIR/MissingFeatures.h"
 #include "CIRGenFunction.h"
 #include "CIRGenModule.h"
 #include "CIRGenOpenMPRuntime.h"
 #include "TargetInfo.h"
-#include "CIR/MissingFeatures.h"
 
-#include "clang/AST/StmtVisitor.h"
 #include "CIR/Dialect/IR/CIRAttrs.h"
 #include "CIR/Dialect/IR/CIRDataLayout.h"
 #include "CIR/Dialect/IR/CIRDialect.h"
 #include "CIR/Dialect/IR/CIROpsEnums.h"
 #include "CIR/Dialect/IR/CIRTypes.h"
+#include "clang/AST/StmtVisitor.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cstdint>
 

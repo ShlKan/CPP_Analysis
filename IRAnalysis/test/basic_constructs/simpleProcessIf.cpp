@@ -2,10 +2,12 @@
 
 #include <systemc>
 
+// CHECK1: !s32i = !cir.int<s, 32>
+// CHECK1: !u32i = !cir.int<u, 32>
 SC_MODULE(Process){// CHECK: "builtin.module"() <{sym_name = "Process"}> ({
                    SC_CTOR(Process){SC_THREAD(emptyProcess);
 // CHECK: %0 = "sys.ProcDef"() <{proc_name = "emptyProcess", proc_type =
-// !sys<s_proc CHECK: Proc ()>}> ({
+// !sys<s_proc Proc ()>}> ({
 }
 void emptyProcess() {
   sc_dt::sc_int<8> i = 2;

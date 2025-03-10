@@ -47,6 +47,12 @@ public:
   std::optional<uint32_t> matchSysInt(const clang::QualType &type);
 
   /*
+   * Match a type against a systemc integer type. If matched then
+   * return the bitwidth of the type, otherwise return nullopt.
+   */
+  std::optional<uint32_t> matchSysInt2(const clang::QualType &type);
+
+  /*
    * Match a FieldDecl's initial value.
    */
   std::optional<llvm::APInt> matchFieldInitAPInt(const clang::Expr &expr);
@@ -74,6 +80,12 @@ private:
 
   /* The pattern of builtin integer Type. */
   const TypeMatcher cppBuiltinPattern = builtinType().bind("builtin");
+
+  /* The pattern of builtin integer Type. */
+  const TypeMatcher sysIntTypePattern =
+      elaboratedType(namesType(templateSpecializationType(
+          hasDeclaration(namedDecl(hasName("sc_int"))),
+          hasAnyTemplateArgument(isExpr(constantExpr().bind("size"))))));
 
   /* The pattern of declaration  */
   const StatementMatcher fieldInitPattern = implicitCastExpr(hasDescendant(

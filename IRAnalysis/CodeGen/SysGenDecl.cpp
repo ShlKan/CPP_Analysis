@@ -23,7 +23,9 @@
 #include "mlir/IR/SymbolTable.h"
 #include "mlir/IR/Value.h"
 #include "clang/AST/DeclBase.h"
+#include "clang/AST/Expr.h"
 #include "llvm/ADT/ScopedHashTable.h"
+#include "llvm/Support/Casting.h"
 
 namespace sys {
 

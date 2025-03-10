@@ -12,10 +12,12 @@
 #include "clang/AST/ExprCXX.h"
 #include "clang/AST/OperationKinds.h"
 #include "clang/AST/StmtVisitor.h"
+#include "clang/AST/Type.h"
 #include "clang/Basic/OperatorKinds.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
+#include <cstdint>
 #include <optional>
 
 #include "mlir/IR/Builders.h"
@@ -82,18 +84,39 @@ public:
     return Visit(implicitExpr->getSubExpr());
   }
 
-  mlir::Value VisitCXXOperatorCallExpr(CXXOperatorCallExpr *cxxOpCallExpr) {
+  std::optional<mlir::sys::CmpOpKind>
+  getBinOpKind(CXXOperatorCallExpr *cxxOpCallExpr) {
     if (cxxOpCallExpr->isComparisonOp(
             clang::OverloadedOperatorKind::OO_Greater)) {
-      auto lhsOp = Visit(cxxOpCallExpr->getArg(0));
-      auto rhsOp = Visit(cxxOpCallExpr->getArg(1));
+      return mlir::sys::CmpOpKind::gt;
+    } else if (cxxOpCallExpr->isComparisonOp(
+                   clang::OverloadedOperatorKind::OO_Less)) {
+      return mlir::sys::CmpOpKind::lt;
+    } else if (cxxOpCallExpr->isComparisonOp(
+                   clang::OverloadedOperatorKind::OO_GreaterEqual)) {
+      return mlir::sys::CmpOpKind::ge;
+    } else if (cxxOpCallExpr->isComparisonOp(
+                   clang::OverloadedOperatorKind::OO_LessEqual)) {
+      return mlir::sys::CmpOpKind::le;
+    } else if (cxxOpCallExpr->isComparisonOp(
+                   clang::OverloadedOperatorKind::OO_Equal)) {
+      return mlir::sys::CmpOpKind::eq;
+    } else {
+      return {};
+    }
+  }
 
-      auto sCmpOpKind = mlir::sys::CmpOpKind::gt;
+  mlir::Value VisitCXXOperatorCallExpr(CXXOperatorCallExpr *cxxOpCallExpr) {
+    auto lhsOp = Visit(cxxOpCallExpr->getArg(0));
+    auto rhsOp = Visit(cxxOpCallExpr->getArg(1));
+
+    if (auto sCmpOpKind = getBinOpKind(cxxOpCallExpr); sCmpOpKind.has_value()) {
       auto boolTy = mlir::cir::BoolType::get(builder.getContext());
       return builder.create<mlir::sys::CmpOp>(
-          SGM.getLoc(cxxOpCallExpr->getExprLoc()), boolTy, sCmpOpKind, lhsOp,
-          rhsOp);
+          SGM.getLoc(cxxOpCallExpr->getExprLoc()), boolTy, sCmpOpKind.value(),
+          lhsOp, rhsOp);
     }
+    llvm_unreachable("Unsupported CXXOperatorCallExpr.");
   }
 
   mlir::Value VisitDeclRefExpr(DeclRefExpr *declRefExpr) {
@@ -108,8 +131,16 @@ public:
   }
 
   mlir::Value VisitCXXMemberCallExpr(CXXMemberCallExpr *memCallExpr) {
-    // TODO: Need more work here.
-    return Visit(memCallExpr->getImplicitObjectArgument());
+    // It checks if the member call is of the form s.uint64_t(...), where
+    // s is a sc_base_int integer.
+    if (auto callee = memCallExpr->getImplicitObjectArgument();
+        callee && SGM.getSysMatcher()->matchSCIntBase(callee->getType())) {
+      if (memCallExpr->getMethodDecl()->getDeclName().getAsString() ==
+          "operator long long") {
+        return Visit(memCallExpr->getImplicitObjectArgument());
+      }
+    }
+    llvm_unreachable("Unsupported CXXMemberCallExpr.");
   }
 
   mlir::Value VisitMemberExpr(MemberExpr *memExpr) {

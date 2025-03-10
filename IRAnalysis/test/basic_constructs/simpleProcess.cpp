@@ -5,7 +5,7 @@
 SC_MODULE(Process){// CHECK: "builtin.module"() <{sym_name = "Process"}> ({
                    SC_CTOR(Process){SC_THREAD(emptyProcess);
 // CHECK: %0 = "sys.ProcDef"() <{proc_name = "emptyProcess", proc_type =
-// !sys<s_proc CHECK: Proc ()>}> ({
+// !sys<s_proc Proc ()>}> ({
 }
 void emptyProcess() {}
 }

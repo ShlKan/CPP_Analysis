@@ -45,6 +45,7 @@ public:
 
   mlir::sys::SIntType getSSignedIntType(uint32_t size);
   mlir::sys::SIntType getSUSignedIntType(uint32_t size);
+  SysMatcher *getSysMatcher() { return sysMatcher.get(); }
 
   ~SysGenModule();
 
@@ -65,9 +66,6 @@ public:
   mlir::Value
   buildExpr(clang::Expr *expr, mlir::Operation *context,
             llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable);
-  mlir::Value
-  buildBinOp(clang::BinaryOperator *binExpr, mlir::Operation *context,
-             llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable);
 };
 } // namespace sys
 

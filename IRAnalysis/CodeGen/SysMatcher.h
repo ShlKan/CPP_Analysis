@@ -60,14 +60,13 @@ public:
   /*
    * Match a statement expression.
    */
-  std::optional<const clang::MemberExpr *>
-  matchMemExpr(const clang::Stmt *stmt);
-
-  /*
-   * Match a statement expression.
-   */
   std::optional<const clang::DeclRefExpr *>
   matchdeclRef(const clang::Stmt *stmt);
+
+  /*
+   * Match `sc_int_base` type.
+   */
+  bool matchSCIntBase(const clang::QualType &type);
 
 private:
   clang::ASTContext &astCtx;
@@ -95,9 +94,13 @@ private:
   const StatementMatcher implicitCasterPattern =
       findAll(memberExpr(findAll(memberExpr().bind("memExpr"))));
 
-  /* ImplicitCastExpr  */
+  /* declRefExpr  */
   const StatementMatcher declRefPattern =
       findAll(declRefExpr().bind("declRefExpr"));
+
+  /* sc_base type */
+  const TypeMatcher scBasePattern =
+      recordType(hasDeclaration(namedDecl(hasName("sc_int_base"))));
 };
 } // namespace sys
 

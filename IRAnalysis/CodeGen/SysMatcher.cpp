@@ -57,20 +57,17 @@ SysMatcher::matchFieldInitAPInt(const clang::Expr &expr) {
       ->getValue();
 }
 
-std::optional<const clang::MemberExpr *>
-SysMatcher::matchMemExpr(const clang::Stmt *stmt) {
-  auto matchResult = match(implicitCasterPattern, *stmt, astCtx);
-  if (matchResult.empty())
-    return std::nullopt;
-  return matchResult.front().getNodeAs<clang::MemberExpr>("memExpr");
-}
-
 std::optional<const clang::DeclRefExpr *>
 SysMatcher::matchdeclRef(const clang::Stmt *stmt) {
   auto matchResult = match(declRefPattern, *stmt, astCtx);
   if (matchResult.empty())
     return std::nullopt;
   return matchResult.front().getNodeAs<clang::DeclRefExpr>("declRefExpr");
+}
+
+bool SysMatcher::matchSCIntBase(const clang::QualType &type) {
+  auto matchResult = match(scBasePattern, type, astCtx);
+  return !matchResult.empty();
 }
 
 } // namespace sys

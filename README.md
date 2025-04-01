@@ -1,5 +1,5 @@
 
-# CPP_Analysis: A Analyzer of c or c++
+# CPP_Analysis: A Analyzer of SystemC
 
 The tool is built on [ClangIR](https://llvm.github.io/clangir//).
 

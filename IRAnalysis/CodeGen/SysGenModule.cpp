@@ -34,6 +34,7 @@
 #include "clang/Basic/LLVM.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/APSInt.h"
+#include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Casting.h"
@@ -87,6 +88,14 @@ mlir::sys::ConstantOp SysGenModule::getConstSysInt(mlir::Location loc,
   return ConstantOp;
 }
 
+mlir::sys::ConstantOp SysGenModule::getConstSysBV(mlir::Location loc,
+                                                  mlir::Type ty,
+                                                  llvm::StringRef &val) {
+  auto ConstantOp = builder.create<mlir::sys::ConstantOp>(
+      loc, ty, mlir::sys::BitVecAttr::get(ty, val));
+  return ConstantOp;
+}
+
 void SysGenModule::buildSysModule(const clang::CXXRecordDecl *moduleDecl) {
   theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   theModule.setName(moduleDecl->getDeclName().getAsString());
@@ -124,6 +133,14 @@ mlir::sys::SIntType SysGenModule::getSSignedIntType(uint32_t size) {
     return sSignedIntTyMap[size];
   auto ty = mlir::sys::SIntType::get(builder.getContext(), size, true);
   sSignedIntTyMap[size] = ty;
+  return ty;
+}
+
+mlir::sys::SBitVecType SysGenModule::getBitVecType(uint32_t size) {
+  if (sBitVecTyMap.count(size))
+    return sBitVecTyMap[size];
+  auto ty = mlir::sys::SBitVecType::get(builder.getContext(), size);
+  sBitVecTyMap[size] = ty;
   return ty;
 }
 

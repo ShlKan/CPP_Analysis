@@ -53,6 +53,12 @@ public:
   std::optional<uint32_t> matchSysInt2(const clang::QualType &type);
 
   /*
+   * Match a type against a systemc bit vector type. If matched then
+   * return the bitwidth of the type, otherwise return nullopt.
+   */
+  std::optional<uint32_t> matchBitVecTy(const clang::QualType &type);
+
+  /*
    * Match a FieldDecl's initial value.
    */
   std::optional<llvm::APInt> matchFieldInitAPInt(const clang::Expr &expr);
@@ -84,6 +90,12 @@ private:
   const TypeMatcher sysIntTypePattern =
       elaboratedType(namesType(templateSpecializationType(
           hasDeclaration(namedDecl(hasName("sc_int"))),
+          hasAnyTemplateArgument(isExpr(constantExpr().bind("size"))))));
+
+  /* The pattern of builtin bv Type. */
+  const TypeMatcher sysBitVecPattern =
+      elaboratedType(namesType(templateSpecializationType(
+          hasDeclaration(namedDecl(hasName("sc_bv"))),
           hasAnyTemplateArgument(isExpr(constantExpr().bind("size"))))));
 
   /* The pattern of declaration  */

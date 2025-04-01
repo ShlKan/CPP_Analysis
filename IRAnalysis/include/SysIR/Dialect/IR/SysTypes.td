@@ -78,6 +78,21 @@ class SysSIntType<int width>
 }
 
 
+//===----------------------------------------------------------------------===//
+// Sys Bit Vector Type
+//===----------------------------------------------------------------------===//
+def Sys_BitVecType : Sys_Type<"SBitVec", "s_bv",
+    [DeclareTypeInterfaceMethods<DataLayoutTypeInterface>]> {
+  let summary = "System bit vector type with arbitrary precision up to a fixed limit";
+
+  let description = "SBitVec is a bit vector type that supports a set of bitvector operations."
+                    "It is configured by the bitwidth of the vector. ";
+  let parameters = (ins "unsigned":$width);
+  let hasCustomAssemblyFormat = 1;
+  let genVerifyDecl = 1;
+}
+
+
 def SysProcType : Sys_Type<"SProcess", "s_proc"> {
   let summary = "The type of system process";
   let description = [{
@@ -96,7 +111,7 @@ def SysProcType : Sys_Type<"SProcess", "s_proc"> {
 
 
 def Sys_AnyType : AnyTypeOf<[
-  Sys_IntType, CIR_BoolType
+  Sys_IntType, Sys_BitVecType , CIR_BoolType
 ]>;
 
 

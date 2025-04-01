@@ -14,11 +14,13 @@
 #include "clang/AST/StmtVisitor.h"
 #include "clang/AST/Type.h"
 #include "clang/Basic/OperatorKinds.h"
+#include "llvm/ADT/APInt.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cstdint>
 #include <optional>
+#include <string>
 
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/Operation.h"
@@ -75,6 +77,24 @@ public:
           return SGM.getConstSysInt(SGM.getLoc(implicitExpr->getExprLoc()),
                                     SGM.getSSignedIntType(sizeOpt.value()),
                                     val);
+        } else {
+          // The initializer can also be an non-integer literal expression.
+          return Visit(cxxConstructExpr->getArg(0));
+        }
+      }
+
+      if (auto sizeOpt =
+              SGM.getSysMatcher()->matchBitVecTy(cxxConstructExpr->getType());
+          sizeOpt.has_value()) {
+        auto implicitCastExpr = llvm::dyn_cast_or_null<clang::ImplicitCastExpr>(
+            cxxConstructExpr->getArg(0));
+        if (implicitCastExpr &&
+            llvm::isa<StringLiteral>(implicitCastExpr->getSubExpr())) {
+          auto strLit = llvm::dyn_cast_or_null<StringLiteral>(
+              implicitCastExpr->getSubExpr());
+          auto str = strLit->getString();
+          return SGM.getConstSysBV(SGM.getLoc(implicitExpr->getExprLoc()),
+                                   SGM.getBitVecType(sizeOpt.value()), str);
         } else {
           // The initializer can also be an non-integer literal expression.
           return Visit(cxxConstructExpr->getArg(0));

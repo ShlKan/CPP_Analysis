@@ -153,3 +153,39 @@ void SysDialect::printType(Type type, mlir::DialectAsmPrinter &printer) const {
         llvm::report_fatal_error("printer is missing a handler for this type");
       });
 }
+
+//==----------------------------------------------------------------===//
+//                            S_BitVectorType
+//==----------------------------------------------------------------===//
+
+mlir::LogicalResult
+SBitVecType::verify(llvm::function_ref<mlir::InFlightDiagnostic()> emitError,
+                    unsigned width) {
+  if (width < 1) {
+    emitError() << "expected bit vector width to be greater than 0";
+    return mlir::failure();
+  }
+  return mlir::success();
+}
+
+uint64_t
+SBitVecType::getABIAlignment(const mlir::DataLayout &dataLayout,
+                             mlir::DataLayoutEntryListRef params) const {
+  return (uint64_t)(getWidth() / 8);
+}
+
+llvm::TypeSize
+SBitVecType::getTypeSizeInBits(const mlir::DataLayout &dataLayout,
+                               mlir::DataLayoutEntryListRef params) const {
+  return llvm::TypeSize::getFixed(getWidth());
+}
+
+uint64_t SBitVecType::getPreferredAlignment(
+    const ::mlir::DataLayout &dataLayout,
+    ::mlir::DataLayoutEntryListRef params) const {
+  return (uint64_t)(getWidth() / 8);
+}
+
+void SBitVecType::print(::mlir::AsmPrinter &odsPrinter) const {
+  odsPrinter << "<" << this->getWidth() << ">";
+}

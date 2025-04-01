@@ -13,10 +13,22 @@
 #include "mlir/Support/LLVM.h"
 #include "mlir/Support/LogicalResult.h"
 
+#include "llvm/ADT/BitVector.h"
+#include "llvm/ADT/Hashing.h"
 #include "llvm/ADT/TypeSwitch.h"
 
 using namespace ::mlir::sys;
 using namespace ::mlir;
+
+namespace llvm {
+llvm::hash_code hash_value(const BitVector &bv) {
+  std::vector<int> bv1;
+  for (int i = 0; i < bv.size(); i++) {
+    bv1.push_back(bv[i]);
+  }
+  return hash_combine_range(bv1.cbegin(), bv1.cend());
+}
+} // namespace llvm
 
 #define GET_ATTRDEF_CLASSES
 #include "SysIR/Dialect/IR/SysOpsAttributes.cpp.inc"
@@ -70,6 +82,19 @@ void IntAttr::print(AsmPrinter &printer) const {
   else
     printer << getUInt();
   printer << '>';
+}
+
+void BitVecAttr::print(AsmPrinter &printer) const {
+  auto type = mlir::cast<SBitVecType>(getType());
+  if (getBV().size() == 0)
+    printer << "[]";
+  else {
+    printer << '[';
+    for (int i = 0; i < getBV().size(); i++) {
+      printer << getBV()[i] << ";";
+    }
+    printer << ']';
+  }
 }
 
 void SysDialect::printAttribute(Attribute attr, DialectAsmPrinter &os) const {

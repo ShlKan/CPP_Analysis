@@ -45,6 +45,7 @@ public:
 
   mlir::sys::SIntType getSSignedIntType(uint32_t size);
   mlir::sys::SIntType getSUSignedIntType(uint32_t size);
+  mlir::sys::SBitVecType getBitVecType(uint32_t size);
   SysMatcher *getSysMatcher() { return sysMatcher.get(); }
 
   ~SysGenModule();
@@ -53,12 +54,15 @@ private:
   llvm::SmallVector<clang::StringLiteral *, 4> processNames;
   std::unordered_map<uint32_t, mlir::sys::SIntType> sSignedIntTyMap;
   std::unordered_map<uint32_t, mlir::sys::SIntType> sUnsigendIntTyMap;
+  std::unordered_map<uint32_t, mlir::sys::SBitVecType> sBitVecTyMap;
   void collectProcess(const clang::CXXRecordDecl *moduleDecl);
   std::unique_ptr<sys::SysMatcher> sysMatcher;
 
 public:
   mlir::sys::ConstantOp getConstSysInt(mlir::Location loc, mlir::Type ty,
                                        llvm::APInt &val);
+  mlir::sys::ConstantOp getConstSysBV(mlir::Location loc, mlir::Type ty,
+                                      llvm::StringRef &val);
   void buildSysModule(const clang::CXXRecordDecl *moduleDecl);
   void buildFieldDecl(const clang::FieldDecl *decl);
 

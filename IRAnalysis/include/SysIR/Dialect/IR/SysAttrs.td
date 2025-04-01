@@ -47,6 +47,34 @@ def IntAttr : Sys_Attr<"Int", "int", [TypedAttrInterface]> {
   let hasCustomAssemblyFormat = 1;
 }
 
+def BitVecAttr : Sys_Attr<"BitVec", "bv", [TypedAttrInterface]> {
+  let summary = "An Attribute containing a bv value";
+  let description = [{
+    An integer attribute is a literal attribute that represents an integral
+    value of the specified integer type in SysIR.
+  }];
+  let parameters = (ins AttributeSelfTypeParameter<"">:$type, "BitVector":$value);
+  let builders = [
+    AttrBuilderWithInferredContext<(ins "Type":$type,
+                                        "const llvm::StringRef &":$value), [{
+      BitVector bv;
+      for (const auto &c : value) {
+        if (c == '1') {
+          bv.push_back(true);
+        } else if (c == '0') {
+          bv.push_back(false);
+        }
+      }
+      return $_get(type.getContext(), type, bv);
+    }]>
+  ];
+  let extraClassDeclaration = [{
+    BitVector getBV() const { return getValue(); }
+  }];
+  //let genVerifyDecl = 1;
+  let hasCustomAssemblyFormat = 1;
+}
+
 
 
 #endif

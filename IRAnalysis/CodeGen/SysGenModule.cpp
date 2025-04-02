@@ -96,6 +96,14 @@ mlir::sys::ConstantOp SysGenModule::getConstSysBV(mlir::Location loc,
   return ConstantOp;
 }
 
+mlir::sys::ConstantOp SysGenModule::getConstSysBVL(mlir::Location loc,
+                                                   mlir::Type ty,
+                                                   llvm::StringRef &val) {
+  auto ConstantOp = builder.create<mlir::sys::ConstantOp>(
+      loc, ty, mlir::sys::BitVecLAttr::get(ty, val));
+  return ConstantOp;
+}
+
 void SysGenModule::buildSysModule(const clang::CXXRecordDecl *moduleDecl) {
   theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   theModule.setName(moduleDecl->getDeclName().getAsString());
@@ -141,6 +149,14 @@ mlir::sys::SBitVecType SysGenModule::getBitVecType(uint32_t size) {
     return sBitVecTyMap[size];
   auto ty = mlir::sys::SBitVecType::get(builder.getContext(), size);
   sBitVecTyMap[size] = ty;
+  return ty;
+}
+
+mlir::sys::SBitVecLType SysGenModule::getBitVecLType(uint32_t size) {
+  if (sBitVecLTyMap.count(size))
+    return sBitVecLTyMap[size];
+  auto ty = mlir::sys::SBitVecLType::get(builder.getContext(), size);
+  sBitVecLTyMap[size] = ty;
   return ty;
 }
 

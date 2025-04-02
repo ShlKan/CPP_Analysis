@@ -47,13 +47,19 @@ std::optional<uint32_t> SysMatcher::matchSysInt2(const clang::QualType &type) {
   return size->getResultAsAPSInt().getZExtValue();
 }
 
-std::optional<uint32_t> SysMatcher::matchBitVecTy(const clang::QualType &type) {
-  auto matchResult = match(sysBitVecPattern, type, astCtx);
+std::optional<uint32_t> SysMatcher::matchBitVecTy(const clang::QualType &type,
+                                                  const std::string &s) {
+  auto matchResult = match(sysBitVecPattern(s), type, astCtx);
   if (matchResult.empty())
     return std::nullopt;
 
   auto size = matchResult.front().getNodeAs<clang::ConstantExpr>("size");
   return size->getResultAsAPSInt().getZExtValue();
+}
+
+bool SysMatcher::matchSCLogicTy(const clang::QualType &type) {
+  auto matchResult = match(sysSCLogicPattern, type, astCtx);
+  return !matchResult.empty();
 }
 
 std::optional<llvm::APInt>

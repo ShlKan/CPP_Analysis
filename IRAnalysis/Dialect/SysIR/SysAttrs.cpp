@@ -15,7 +15,9 @@
 
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/Hashing.h"
+#include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/TypeSwitch.h"
+#include <cstdint>
 
 using namespace ::mlir::sys;
 using namespace ::mlir;
@@ -28,6 +30,10 @@ llvm::hash_code hash_value(const BitVector &bv) {
   }
   return hash_combine_range(bv1.cbegin(), bv1.cend());
 }
+llvm::hash_code hash_value(const SmallVector<uint8_t> &bv) {
+  return hash_combine_range(bv.begin(), bv.end());
+}
+
 } // namespace llvm
 
 #define GET_ATTRDEF_CLASSES
@@ -86,12 +92,37 @@ void IntAttr::print(AsmPrinter &printer) const {
 
 void BitVecAttr::print(AsmPrinter &printer) const {
   auto type = mlir::cast<SBitVecType>(getType());
-  if (getBV().size() == 0)
+  if (getBV().empty())
     printer << "[]";
   else {
     printer << '[';
-    for (int i = 0; i < getBV().size(); i++) {
+    for (int i = 0; i < getBV().size() - 1; i++) {
       printer << getBV()[i] << ";";
+    }
+    printer << getBV()[getBV().size() - 1];
+    printer << ']';
+  }
+}
+
+void BitVecLAttr::print(AsmPrinter &printer) const {
+  auto type = mlir::cast<SBitVecLType>(getType());
+  if (getValue().empty())
+    printer << "[]";
+  else {
+    printer << '[';
+    for (int i = 0; i < getValue().size(); i++) {
+      if (getValue()[i] == 0)
+        printer << '0';
+      else if (getValue()[i] == 1)
+        printer << '1';
+      else if (getValue()[i] == 2)
+        printer << 'z';
+      else if (getValue()[i] == 3)
+        printer << 'x';
+      else
+        llvm_unreachable("unexpected value in BitVecLAttr");
+      if (i != getValue().size() - 1)
+        printer << ";";
     }
     printer << ']';
   }

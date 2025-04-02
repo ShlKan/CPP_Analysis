@@ -20,7 +20,7 @@ include "CIR/Dialect/IR/CIRTypes.td"
 // Sys Type
 //===----------------------------------------------------------------------===//
 
-class Sys_Type<string name, string typeMnemonic, list<Trait> traits =[], 
+class Sys_Type<string name, string typeMnemonic, list<Trait> traits =[],
         string baseCppClass = "::mlir::Type" >
     : TypeDef<Sys_Dialect, name, traits, baseCppClass> {
   let mnemonic = typeMnemonic;
@@ -83,9 +83,23 @@ class SysSIntType<int width>
 //===----------------------------------------------------------------------===//
 def Sys_BitVecType : Sys_Type<"SBitVec", "s_bv",
     [DeclareTypeInterfaceMethods<DataLayoutTypeInterface>]> {
-  let summary = "System bit vector type with arbitrary precision up to a fixed limit";
+  let summary = "System bit vector type with only 0 and 1 as values";
 
   let description = "SBitVec is a bit vector type that supports a set of bitvector operations."
+                    "It is configured by the bitwidth of the vector. ";
+  let parameters = (ins "unsigned":$width);
+  let hasCustomAssemblyFormat = 1;
+  let genVerifyDecl = 1;
+}
+
+//===----------------------------------------------------------------------===//
+// Sys Bit Vector 4 Value Type
+//===----------------------------------------------------------------------===//
+def Sys_BitVecLType : Sys_Type<"SBitVecL", "s_bvl",
+    [DeclareTypeInterfaceMethods<DataLayoutTypeInterface>]> {
+  let summary = "System bit vector type with four kinds of bit values: 0, 1, Z (high-impedance), and X.";
+
+  let description = "SBitVecL is a bit vector type that supports a set of bitvector operations."
                     "It is configured by the bitwidth of the vector. ";
   let parameters = (ins "unsigned":$width);
   let hasCustomAssemblyFormat = 1;

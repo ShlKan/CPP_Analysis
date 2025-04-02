@@ -10,6 +10,7 @@
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Diagnostics.h"
 #include "mlir/IR/DialectImplementation.h"
+#include "mlir/IR/OpImplementation.h"
 #include "mlir/Interfaces/DataLayoutInterfaces.h"
 #include "mlir/Support/LLVM.h"
 #include "mlir/Support/LogicalResult.h"
@@ -17,6 +18,7 @@
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/TypeSwitch.h"
+#include "llvm/Support/LogicalResult.h"
 
 //===----------------------------------------------------------------------====//
 //  Custom parser and printer.
@@ -187,5 +189,41 @@ uint64_t SBitVecType::getPreferredAlignment(
 }
 
 void SBitVecType::print(::mlir::AsmPrinter &odsPrinter) const {
+  odsPrinter << "<" << this->getWidth() << ">";
+}
+
+//==----------------------------------------------------------------===//
+//                            S_BitVectorLType
+//==----------------------------------------------------------------===//
+
+llvm::LogicalResult
+SBitVecLType::verify(llvm::function_ref<mlir::InFlightDiagnostic()> emitError,
+                     unsigned width) {
+  if (width < 1) {
+    emitError() << "expected bit vector width to be greater than 0";
+    return mlir::failure();
+  }
+  return mlir::success();
+}
+
+uint64_t
+SBitVecLType::getABIAlignment(const mlir::DataLayout &dataLayout,
+                              mlir::DataLayoutEntryListRef params) const {
+  return (uint64_t)(getWidth() / 8);
+}
+
+llvm::TypeSize
+SBitVecLType::getTypeSizeInBits(const mlir::DataLayout &dataLayout,
+                                mlir::DataLayoutEntryListRef params) const {
+  return llvm::TypeSize::getFixed(getWidth());
+}
+
+uint64_t SBitVecLType::getPreferredAlignment(
+    const ::mlir::DataLayout &dataLayout,
+    ::mlir::DataLayoutEntryListRef params) const {
+  return (uint64_t)(getWidth() / 8);
+}
+
+void SBitVecLType::print(::mlir::AsmPrinter &odsPrinter) const {
   odsPrinter << "<" << this->getWidth() << ">";
 }

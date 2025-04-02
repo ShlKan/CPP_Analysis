@@ -16,8 +16,10 @@
 #include "clang/Basic/OperatorKinds.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/raw_ostream.h"
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -83,8 +85,8 @@ public:
         }
       }
 
-      if (auto sizeOpt =
-              SGM.getSysMatcher()->matchBitVecTy(cxxConstructExpr->getType());
+      if (auto sizeOpt = SGM.getSysMatcher()->matchBitVecTy(
+              cxxConstructExpr->getType(), "sc_bv");
           sizeOpt.has_value()) {
         auto implicitCastExpr = llvm::dyn_cast_or_null<clang::ImplicitCastExpr>(
             cxxConstructExpr->getArg(0));
@@ -95,6 +97,24 @@ public:
           auto str = strLit->getString();
           return SGM.getConstSysBV(SGM.getLoc(implicitExpr->getExprLoc()),
                                    SGM.getBitVecType(sizeOpt.value()), str);
+        } else {
+          // The initializer can also be an non-integer literal expression.
+          return Visit(cxxConstructExpr->getArg(0));
+        }
+      }
+
+      if (auto sizeOpt = SGM.getSysMatcher()->matchBitVecTy(
+              cxxConstructExpr->getType(), "sc_lv");
+          sizeOpt.has_value()) {
+        auto implicitCastExpr = llvm::dyn_cast_or_null<clang::ImplicitCastExpr>(
+            cxxConstructExpr->getArg(0));
+        if (implicitCastExpr &&
+            llvm::isa<StringLiteral>(implicitCastExpr->getSubExpr())) {
+          auto strLit = llvm::dyn_cast_or_null<StringLiteral>(
+              implicitCastExpr->getSubExpr());
+          auto str = strLit->getString();
+          return SGM.getConstSysBVL(SGM.getLoc(implicitExpr->getExprLoc()),
+                                    SGM.getBitVecLType(sizeOpt.value()), str);
         } else {
           // The initializer can also be an non-integer literal expression.
           return Visit(cxxConstructExpr->getArg(0));
@@ -124,6 +144,29 @@ public:
     } else {
       return {};
     }
+  }
+
+  mlir::Value VisitCXXConstructExpr(CXXConstructExpr *cxxConstructExpr) {
+    if (SGM.getSysMatcher()->matchSCLogicTy(cxxConstructExpr->getType())) {
+      auto declRefExpr = llvm::dyn_cast_or_null<clang::DeclRefExpr>(
+          cxxConstructExpr->getArg(0));
+      auto val = declRefExpr->getDecl()->getNameAsString();
+      llvm::StringRef valStr("");
+      if (val == "SC_LOGIC_Z") {
+        valStr = "z";
+      } else if (val == "SC_LOGIC_X") {
+        valStr = "x";
+      } else if (val == "SC_LOGIC_0") {
+        valStr = "0";
+      } else if (val == "SC_LOGIC_1") {
+        valStr = "1";
+      } else {
+        llvm_unreachable("Unsupported SC Logic Type.");
+      }
+      return SGM.getConstSysBVL(SGM.getLoc(cxxConstructExpr->getExprLoc()),
+                                SGM.getBitVecLType(1), valStr);
+    }
+    llvm_unreachable("Unsupported CXXConstructExpr.");
   }
 
   mlir::Value VisitCXXOperatorCallExpr(CXXOperatorCallExpr *cxxOpCallExpr) {

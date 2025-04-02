@@ -56,7 +56,14 @@ public:
    * Match a type against a systemc bit vector type. If matched then
    * return the bitwidth of the type, otherwise return nullopt.
    */
-  std::optional<uint32_t> matchBitVecTy(const clang::QualType &type);
+  std::optional<uint32_t> matchBitVecTy(const clang::QualType &type,
+                                        const std::string &s);
+
+  /*
+   * Match a type against a systemc sc_logic type. If matched then
+   * return the bitwidth of the type, otherwise return nullopt.
+   */
+  bool matchSCLogicTy(const clang::QualType &type);
 
   /*
    * Match a FieldDecl's initial value.
@@ -93,10 +100,15 @@ private:
           hasAnyTemplateArgument(isExpr(constantExpr().bind("size"))))));
 
   /* The pattern of builtin bv Type. */
-  const TypeMatcher sysBitVecPattern =
-      elaboratedType(namesType(templateSpecializationType(
-          hasDeclaration(namedDecl(hasName("sc_bv"))),
-          hasAnyTemplateArgument(isExpr(constantExpr().bind("size"))))));
+  TypeMatcher sysBitVecPattern(std::string s) {
+    return elaboratedType(namesType(templateSpecializationType(
+        hasDeclaration(namedDecl(hasName(s))),
+        hasAnyTemplateArgument(isExpr(constantExpr().bind("size"))))));
+  };
+
+  /* The pattern of builtin sc_logic Type. */
+  TypeMatcher sysSCLogicPattern =
+      elaboratedType(namesType(hasDeclaration(namedDecl(hasName("sc_logic")))));
 
   /* The pattern of declaration  */
   const StatementMatcher fieldInitPattern = implicitCastExpr(hasDescendant(

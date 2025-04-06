@@ -16,6 +16,7 @@
 #include "clang/Basic/OperatorKinds.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -23,12 +24,14 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
 
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/Operation.h"
 #include "mlir/IR/SymbolTable.h"
 
 #include "CIRGenFunction.h"
+#include "mlir/IR/Types.h"
 #include "mlir/IR/Value.h"
 
 namespace cir {
@@ -201,6 +204,49 @@ public:
       if (memCallExpr->getMethodDecl()->getDeclName().getAsString() ==
           "operator long long") {
         return Visit(memCallExpr->getImplicitObjectArgument());
+      }
+    }
+    std::unordered_map<std::string, mlir::sys::SUnaryOpKind> unaryOpMap = {
+        {"and_reduce", mlir::sys::SUnaryOpKind::AndRed},
+        {"or_reduce", mlir::sys::SUnaryOpKind::OrRed},
+        {"xor_reduce", mlir::sys::SUnaryOpKind::XorRed},
+        {"nand_reduce", mlir::sys::SUnaryOpKind::NandRed},
+        {"nor_reduce", mlir::sys::SUnaryOpKind::NorRed},
+        {"xnor_reduce", mlir::sys::SUnaryOpKind::XnorRed}};
+
+    if (unaryOpMap.find(
+            memCallExpr->getMethodDecl()->getDeclName().getAsString()) !=
+        unaryOpMap.end()) {
+      auto unaryOpKind =
+          unaryOpMap
+              .find(memCallExpr->getMethodDecl()->getDeclName().getAsString())
+              ->second;
+      if (auto implicitArg = llvm::dyn_cast_or_null<clang::ImplicitCastExpr>(
+              memCallExpr->getImplicitObjectArgument())) {
+        if (auto declRef = llvm::dyn_cast_or_null<DeclRefExpr>(
+                implicitArg->getSubExpr())) {
+          auto tyStr = declRef->getType().getAsString();
+          mlir::Type reduceTy;
+          if (tyStr.find("sc_bv") != std::string::npos) {
+            reduceTy = mlir::sys::SBitVecType::get(builder.getContext(), 1);
+          } else {
+            reduceTy = mlir::sys::SBitVecLType::get(builder.getContext(), 1);
+          }
+          if (symTable.count(declRef->getDecl())) {
+            return builder.create<mlir::sys::UnaryOp>(
+                SGM.getLoc(memCallExpr->getExprLoc()), reduceTy, unaryOpKind,
+                symTable.lookup(declRef->getDecl()));
+          } else {
+            auto input =
+                mlir::SymbolTable::lookupSymbolIn(
+                    context, declRef->getDecl()->getDeclName().getAsString())
+                    ->getResults()
+                    .front();
+            return builder.create<mlir::sys::UnaryOp>(
+                SGM.getLoc(memCallExpr->getExprLoc()), reduceTy, unaryOpKind,
+                input);
+          }
+        }
       }
     }
     llvm_unreachable("Unsupported CXXMemberCallExpr.");

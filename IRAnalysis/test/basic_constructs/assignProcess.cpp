@@ -15,7 +15,7 @@ void process() {
   // CHECK: () -> !sys.s_int<s, 33>
   // CHECK: %2 = "cir.const"() <{value = #cir.int<1> : !u32i}> : () -> !u32i
   // CHECK: %3 = "sys.sbinop"(%1, %2) <{kind = 4 : i32}> : (!sys.s_int<s, 33>,
-  // !u32i) -> !sys.s_int<s, 33>
+  // CHECK: !u32i) -> !sys.s_int<s, 33>
 }
 }
 // CHECK:}) : () -> !sys<s_proc Proc ()>

@@ -98,6 +98,48 @@ def ConstantOp : SysOP<"const",
   //let hasFolder = 1;
 }
 
+//===--------------- Unary operator for BitVector ----------------------====/
+def SUOpKind_AndReduce: I32EnumAttrCase<"AndRed", 31, "and_reduce">;
+def SUOpKind_OrReduce: I32EnumAttrCase<"OrRed", 32, "or_reduce">;
+def SUOpKind_NandReduce: I32EnumAttrCase<"NandRed", 33, "nand_reduce">;
+def SUOpKind_NorReduce: I32EnumAttrCase<"NorRed", 34, "nor_reduce">;
+def SUOpKind_XorReduce: I32EnumAttrCase<"XorRed", 35, "xor_reduce">;
+def SUOpKind_XnorReduce: I32EnumAttrCase<"XnorRed", 36, "xnor_reduce">;
+
+def SUnaryOpKind : I32EnumAttr<
+  "SUnaryOpKind",
+  "unary operation kind for Sys bit vectors",
+  [SUOpKind_AndReduce, SUOpKind_OrReduce, SUOpKind_NandReduce,
+   SUOpKind_NorReduce, SUOpKind_XorReduce, SUOpKind_XnorReduce]> {
+ let cppNamespace = "::mlir::sys";
+}
+
+def UnaryOp : SysOP<"suaryop", [Pure]> {
+  let summary = "Unary operations for system bit vectors.";
+  let description =  [{
+    sys.suaryop performs the unary operation according to
+    the specified opcode kind: [add_reduce, nand_reduce, nor_reduce, xor_reduce, xnor_reduce].
+
+    It requires one input operans and has one result.
+
+    ```mlir
+    %7 = sys.suaryop(add_reduce, %1)
+    %8 = sys.suaryop(nand_reduce, %1)
+    ```
+  }];
+  let results = (outs Sys_AnyType:$result);
+  let arguments = (ins Arg<SUnaryOpKind, "sunaryop kind">:$kind,
+                       Arg<Sys_AnyType>:$input);
+
+  let assemblyFormat =
+  [{
+      `(` $kind `,` $input `)` `:` type($input) `,` type($result) attr-dict
+  }];
+
+  let hasVerifier = 1;
+}
+
+
 //===--------------- Binary Operation for Sys Integers -----------------====/
 def SBinOpKind_Mul: I32EnumAttrCase<"SMul", 1, "smul">;
 def SBinOpKind_Div : I32EnumAttrCase<"SDiv", 2, "sdiv">;

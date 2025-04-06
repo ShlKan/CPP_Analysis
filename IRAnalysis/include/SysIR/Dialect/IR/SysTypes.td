@@ -125,7 +125,7 @@ def SysProcType : Sys_Type<"SProcess", "s_proc"> {
 
 
 def Sys_AnyType : AnyTypeOf<[
-  Sys_IntType, Sys_BitVecType , CIR_BoolType
+  Sys_IntType, Sys_BitVecType, Sys_BitVecLType, CIR_BoolType
 ]>;
 
 

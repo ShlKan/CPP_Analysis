@@ -75,6 +75,12 @@ ConditionOp::getMutableSuccessorOperands(RegionBranchPoint point) {
   return getArgsMutable();
 }
 
+//===---     UnaryOp     ---====//
+LogicalResult UnaryOp::verify() {
+  // TODO,verification should be done here.
+  return mlir::success();
+}
+
 //===---     LoopOp     ---====//
 llvm::SmallVector<Region *> LoopOp::getLoopRegions() {
   return {&getBefore(), &getAfter()};

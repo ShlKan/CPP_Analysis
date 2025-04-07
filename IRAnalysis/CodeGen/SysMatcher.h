@@ -60,6 +60,13 @@ public:
                                         const std::string &s);
 
   /*
+   * Match a type against a systemc bit vector type. If matched then
+   * return the bitwidth of the type, otherwise return nullopt.
+   */
+  std::optional<std::vector<const clang::DeclRefExpr *>>
+  matchBitVecOp(const clang::Stmt &stmt, const std::string &s);
+
+  /*
    * Match a type against a systemc sc_logic type. If matched then
    * return the bitwidth of the type, otherwise return nullopt.
    */
@@ -125,6 +132,14 @@ private:
   /* sc_base type */
   const TypeMatcher scBasePattern =
       recordType(hasDeclaration(namedDecl(hasName("sc_int_base"))));
+
+  /* bit vector binary operator */
+  const StatementMatcher bitVecBopPattern(std::string opName) {
+    return findAll(cxxOperatorCallExpr(
+        hasOverloadedOperatorName(opName),
+        hasLHS(implicitCastExpr(hasDescendant(declRefExpr().bind("lhs")))),
+        hasRHS(implicitCastExpr(hasDescendant(declRefExpr().bind("rhs"))))));
+  }
 };
 } // namespace sys
 

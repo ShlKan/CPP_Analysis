@@ -140,6 +140,8 @@ private:
         hasLHS(implicitCastExpr(hasDescendant(declRefExpr().bind("lhs")))),
         hasRHS(implicitCastExpr(hasDescendant(declRefExpr().bind("rhs"))))));
   }
+  /* Range function */
+  const StatementMatcher rangeMatcher = memberExpr(member(hasName("range")));
 };
 } // namespace sys
 

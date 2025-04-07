@@ -238,6 +238,65 @@ def CmpOp : SysOP<"cmp", [Pure, SameTypeOperands]> {
   let hasVerifier = 0;
 }
 
+//===----------------------------------------------------------------------===//
+// Shift Operations
+//===----------------------------------------------------------------------===//
+
+ def ShiftOp : SysOP<"shift", [Pure]> {
+  let summary = "Shift";
+  let description = [{
+    Shift `left` or `right`, according to the first operand. Second operand is
+    the shift target and the third the amount.
+
+    ```mlir
+    %7 = sys.shift(left, %1, %4)
+    ```
+  }];
+
+  let results = (outs Sys_AnyType:$result);
+  let arguments = (ins Sys_AnyType:$value, CIR_IntType:$amount,
+                       UnitAttr:$isShiftleft);
+
+  let assemblyFormat = [{
+    `(`
+      (`left` $isShiftleft^) : (`right`)?
+      `,` $value `:` type($value)
+      `,` $amount `:` type($amount)
+    `)` `->` type($result) attr-dict
+  }];
+
+  // Already covered by the traits
+  let hasVerifier = 0;
+}
+
+
+//===----------------------------------------------------------------------===//
+// Shift Operations
+//===----------------------------------------------------------------------===//
+
+ def RangeOp : SysOP<"range", [Pure]> {
+  let summary = "Range";
+  let description = [{
+    extract a range from a bit vector.
+
+    ```mlir
+    %7 = sys.range(%1, 3, 2);
+    ```
+  }];
+
+  let results = (outs Sys_BVType:$result);
+  let arguments = (ins Sys_BVType:$value, CIR_IntType:$high, CIR_IntType:$low);
+
+  let assemblyFormat = [{
+    `(`
+      $value `:` type($value)
+      `,` $high `:` type($high)
+      `,` $low `:` type($low)
+    `)` `->` type($result) attr-dict
+  }];
+
+  let hasVerifier = 0;
+}
 
 //===----------------------------------------------------------------------===//
 // ConditionOp

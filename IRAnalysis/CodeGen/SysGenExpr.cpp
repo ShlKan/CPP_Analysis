@@ -201,6 +201,7 @@ public:
   }
 
   mlir::Value VisitExprWithCleanups(ExprWithCleanups *exprWithClean) {
+    exprWithClean->dumpColor();
     auto bvOps = std::unordered_map<std::string, mlir::sys::SBinOpKind>{
         {"&", mlir::sys::SBinOpKind::SAnd},
         {"|", mlir::sys::SBinOpKind::SOr},

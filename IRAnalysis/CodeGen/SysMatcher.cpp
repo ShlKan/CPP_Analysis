@@ -85,4 +85,15 @@ bool SysMatcher::matchSCIntBase(const clang::QualType &type) {
   return !matchResult.empty();
 }
 
+std::optional<std::vector<const clang::DeclRefExpr *>>
+SysMatcher::matchBitVecOp(const clang::Stmt &stmt, const std::string &s) {
+  auto matchResult = match(bitVecBopPattern(s), stmt, astCtx);
+  if (matchResult.empty())
+    return std::nullopt;
+  std::vector<const clang::DeclRefExpr *> declRefs;
+  declRefs.push_back(matchResult.front().getNodeAs<clang::DeclRefExpr>("lhs"));
+  declRefs.push_back(matchResult.front().getNodeAs<clang::DeclRefExpr>("rhs"));
+  return declRefs;
+}
+
 } // namespace sys

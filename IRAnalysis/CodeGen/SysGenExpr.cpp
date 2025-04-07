@@ -45,12 +45,16 @@ private:
   SysGenModule &SGM;
   mlir::Operation *context;
   llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable;
+  mlir::Type &type;
 
 public:
   ExprBuilder(cir::CIRGenBuilderTy &builder, SysGenModule &SGM,
               mlir::Operation *context,
-              llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable)
-      : builder(builder), SGM(SGM), context(context), symTable(symTable) {}
+              llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable,
+              mlir::Type &type)
+      : builder(builder), SGM(SGM), context(context), symTable(symTable),
+        type(type) {}
+
   mlir::Value VisitIntegerLiteral(IntegerLiteral *intLit) {
     return builder.getConstInt(SGM.getLoc(intLit->getExprLoc()),
                                intLit->getValue());
@@ -196,6 +200,29 @@ public:
     llvm_unreachable("The variable is not found");
   }
 
+  mlir::Value VisitExprWithCleanups(ExprWithCleanups *exprWithClean) {
+    auto bvOps = std::unordered_map<std::string, mlir::sys::SBinOpKind>{
+        {"&", mlir::sys::SBinOpKind::SAnd},
+        {"|", mlir::sys::SBinOpKind::SOr},
+        {"^", mlir::sys::SBinOpKind::SXor}};
+    for (const auto &[bvOpName, bvOpKind] : bvOps) {
+      if (auto result =
+              SGM.getSysMatcher()->matchBitVecOp(*exprWithClean, bvOpName);
+          result.has_value()) {
+        if (result->size() != 2 ||
+            !symTable.count(result.value()[0]->getDecl()) ||
+            !symTable.count(result.value()[1]->getDecl())) {
+          llvm_unreachable("ExprWithCleanups: Two operands are expected.");
+        }
+        auto lhs = symTable.lookup(result.value()[0]->getDecl());
+        auto rhs = symTable.lookup(result.value()[1]->getDecl());
+        return builder.create<mlir::sys::BinOp>(
+            SGM.getLoc(exprWithClean->getExprLoc()), type, bvOpKind, lhs, rhs);
+      }
+    }
+    llvm_unreachable("Unsupported ExprWithCleanups.");
+  }
+
   mlir::Value VisitCXXMemberCallExpr(CXXMemberCallExpr *memCallExpr) {
     // It checks if the member call is of the form s.uint64_t(...), where
     // s is a sc_base_int integer.
@@ -338,8 +365,9 @@ public:
 
 mlir::Value SysGenModule::buildExpr(
     clang::Expr *expr, mlir::Operation *context,
-    llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable) {
-  ExprBuilder exprBuilder(builder, *this, context, symTable);
+    llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable,
+    mlir::Type type) {
+  ExprBuilder exprBuilder(builder, *this, context, symTable, type);
   return exprBuilder.Visit(expr);
 }
 

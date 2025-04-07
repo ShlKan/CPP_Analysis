@@ -93,7 +93,18 @@ void SysGenProcess::buildVarDecl(clang::VarDecl *varDecl) {
       break;
     }
   } else {
-    auto expr = SGM.buildExpr(init, SGM.getModule(), symbolTable);
+    mlir::Type varTy = nullptr;
+    if (auto sysIntTy = SGM.getSysMatcher()->matchBitVecTy(type, "sc_bv");
+        sysIntTy.has_value()) {
+      varTy =
+          mlir::sys::SBitVecType::get(builder.getContext(), sysIntTy.value());
+    } else if (auto sysIntTy =
+                   SGM.getSysMatcher()->matchBitVecTy(type, "sc_lv");
+               sysIntTy.has_value()) {
+      varTy =
+          mlir::sys::SBitVecLType::get(builder.getContext(), sysIntTy.value());
+    }
+    auto expr = SGM.buildExpr(init, SGM.getModule(), symbolTable, varTy);
     symbolTable.insert(varDecl, expr);
   }
 }

@@ -73,7 +73,8 @@ public:
   mlir::Type convertType(const clang::QualType type);
   mlir::Value
   buildExpr(clang::Expr *expr, mlir::Operation *context,
-            llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable);
+            llvm::ScopedHashTable<const clang::Decl *, mlir::Value> &symTable,
+            mlir::Type type = nullptr);
 };
 } // namespace sys
 

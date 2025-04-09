@@ -19,6 +19,7 @@
 #include "SysIR/Dialect/IR/SysTypes.h"
 
 #include "CIR/Dialect/IR/CIRTypes.h"
+#include "SysIR/Dialect/IR/SysAttrs.h"
 
 #define GET_OP_CLASSES
 #include "SysIR/Dialect/IR/SysOps.h.inc"

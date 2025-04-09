@@ -5,6 +5,7 @@
 #include "CIRGenBuilder.h"
 #include "CIRGenModule.h"
 #include "SysGenModule.h"
+#include "SysIR/Dialect/IR/SysAttrs.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
 #include "clang/AST/DeclBase.h"
@@ -201,26 +202,39 @@ public:
   }
 
   mlir::Value VisitExprWithCleanups(ExprWithCleanups *exprWithClean) {
-    exprWithClean->dumpColor();
     auto bvOps = std::unordered_map<std::string, mlir::sys::SBinOpKind>{
         {"&", mlir::sys::SBinOpKind::SAnd},
         {"|", mlir::sys::SBinOpKind::SOr},
-        {"^", mlir::sys::SBinOpKind::SXor}};
+        {"^", mlir::sys::SBinOpKind::SXor},
+        {">>", mlir::sys::SBinOpKind::SShiftR},
+        {"<<", mlir::sys::SBinOpKind::SShiftL},
+    };
     for (const auto &[bvOpName, bvOpKind] : bvOps) {
       if (auto result =
               SGM.getSysMatcher()->matchBitVecOp(*exprWithClean, bvOpName);
           result.has_value()) {
-        if (result->size() != 2 ||
-            !symTable.count(result.value()[0]->getDecl()) ||
-            !symTable.count(result.value()[1]->getDecl())) {
+        if (result->size() != 2) {
           llvm_unreachable("ExprWithCleanups: Two operands are expected.");
         }
-        auto lhs = symTable.lookup(result.value()[0]->getDecl());
-        auto rhs = symTable.lookup(result.value()[1]->getDecl());
+        auto lhs = Visit(const_cast<clang::Expr *>(result.value()[0]));
+        auto rhs = Visit(const_cast<clang::Expr *>(result.value()[1]));
         return builder.create<mlir::sys::BinOp>(
             SGM.getLoc(exprWithClean->getExprLoc()), type, bvOpKind, lhs, rhs);
       }
     }
+    if (auto highLow = SGM.getSysMatcher()->matchRangeCall(*exprWithClean);
+        highLow.has_value()) {
+      auto declRef = highLow.value().first;
+      auto caller = Visit(const_cast<clang::DeclRefExpr *>(declRef));
+      auto intType = mlir::sys::SIntType::get(builder.getContext(), 32, false);
+      auto high =
+          mlir::sys::IntAttr::get(intType, highLow.value().second.first);
+      auto low =
+          mlir::sys::IntAttr::get(intType, highLow.value().second.second);
+      return builder.create<mlir::sys::RangeOp>(
+          SGM.getLoc(exprWithClean->getExprLoc()), type, caller, high, low);
+    }
+
     llvm_unreachable("Unsupported ExprWithCleanups.");
   }
 

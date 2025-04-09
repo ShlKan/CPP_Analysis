@@ -22,6 +22,7 @@
 
 #include "clang/ASTMatchers/ASTMatchersInternal.h"
 #include <optional>
+#include <utility>
 
 using namespace clang::ast_matchers;
 
@@ -63,7 +64,7 @@ public:
    * Match a type against a systemc bit vector type. If matched then
    * return the bitwidth of the type, otherwise return nullopt.
    */
-  std::optional<std::vector<const clang::DeclRefExpr *>>
+  std::optional<std::vector<const clang::Expr *>>
   matchBitVecOp(const clang::Stmt &stmt, const std::string &s);
 
   /*
@@ -82,6 +83,13 @@ public:
    */
   std::optional<const clang::DeclRefExpr *>
   matchdeclRef(const clang::Stmt *stmt);
+
+  /*
+   * Match a range range call.
+   */
+  std::optional<
+      std::pair<const clang::DeclRefExpr *, std::pair<uint32_t, uint32_t>>>
+  matchRangeCall(const clang::Expr &expr);
 
   /*
    * Match `sc_int_base` type.
@@ -135,13 +143,15 @@ private:
 
   /* bit vector binary operator */
   const StatementMatcher bitVecBopPattern(std::string opName) {
-    return findAll(cxxOperatorCallExpr(
-        hasOverloadedOperatorName(opName),
-        hasLHS(implicitCastExpr(hasDescendant(declRefExpr().bind("lhs")))),
-        hasRHS(implicitCastExpr(hasDescendant(declRefExpr().bind("rhs"))))));
+    return findAll(cxxOperatorCallExpr(hasOverloadedOperatorName(opName),
+                                       hasLHS(expr().bind("lhs")),
+                                       hasRHS(expr().bind("rhs"))));
   }
   /* Range function */
-  const StatementMatcher rangeMatcher = memberExpr(member(hasName("range")));
+  const StatementMatcher rangeMatcher = findAll(cxxMemberCallExpr(
+      on(expr().bind("caller")), callee(cxxMethodDecl(hasName("range"))),
+      hasArgument(0, integerLiteral().bind("high")),
+      hasArgument(1, integerLiteral().bind("low"))));
 };
 } // namespace sys
 

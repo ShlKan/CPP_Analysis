@@ -149,7 +149,9 @@ def SBinOpKind_Sub : I32EnumAttrCase<"SSub", 5, "ssub">;
 def SBinOpKind_And : I32EnumAttrCase<"SAnd", 6, "sand">;
 def SBinOpKind_Xor : I32EnumAttrCase<"SXor", 7, "sxor">;
 def SBinOpKind_Or  : I32EnumAttrCase<"SOr", 8, "sor">;
-def SBinOpKind_Greater  : I32EnumAttrCase<"SGt", 9, "sgt">;
+def SBinOpKind_ShiftL  : I32EnumAttrCase<"SShiftL", 9, "sshiftl">;
+def SBinOpKind_ShiftR  : I32EnumAttrCase<"SShiftR", 10, "sshiftr">;
+def SBinOpKind_Greater  : I32EnumAttrCase<"SGt", 11, "sgt">;
 
 def SBinOpKind : I32EnumAttr<
     "SBinOpKind",
@@ -157,6 +159,7 @@ def SBinOpKind : I32EnumAttr<
     [SBinOpKind_Mul, SBinOpKind_Div, SBinOpKind_Rem,
      SBinOpKind_Add, SBinOpKind_Sub,
      SBinOpKind_And, SBinOpKind_Xor,
+     SBinOpKind_ShiftL, SBinOpKind_ShiftR,
      SBinOpKind_Or, SBinOpKind_Greater]> {
   let cppNamespace = "::mlir::sys";
 }
@@ -285,14 +288,13 @@ def CmpOp : SysOP<"cmp", [Pure, SameTypeOperands]> {
   }];
 
   let results = (outs Sys_BVType:$result);
-  let arguments = (ins Sys_BVType:$value, CIR_IntType:$high, CIR_IntType:$low);
+  let arguments = (ins Sys_BVType:$value, IntAttr:$high, IntAttr:$low);
 
   let assemblyFormat = [{
     `(`
       $value `:` type($value)
-      `,` $high `:` type($high)
-      `,` $low `:` type($low)
-    `)` `->` type($result) attr-dict
+      attr-dict
+    `)` `->` type($result)
   }];
 
   let hasVerifier = 0;

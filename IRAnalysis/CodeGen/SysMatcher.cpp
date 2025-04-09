@@ -85,15 +85,29 @@ bool SysMatcher::matchSCIntBase(const clang::QualType &type) {
   return !matchResult.empty();
 }
 
-std::optional<std::vector<const clang::DeclRefExpr *>>
+std::optional<std::vector<const clang::Expr *>>
 SysMatcher::matchBitVecOp(const clang::Stmt &stmt, const std::string &s) {
   auto matchResult = match(bitVecBopPattern(s), stmt, astCtx);
   if (matchResult.empty())
     return std::nullopt;
-  std::vector<const clang::DeclRefExpr *> declRefs;
-  declRefs.push_back(matchResult.front().getNodeAs<clang::DeclRefExpr>("lhs"));
-  declRefs.push_back(matchResult.front().getNodeAs<clang::DeclRefExpr>("rhs"));
+  std::vector<const clang::Expr *> declRefs;
+  declRefs.push_back(matchResult.front().getNodeAs<clang::Expr>("lhs"));
+  declRefs.push_back(matchResult.front().getNodeAs<clang::Expr>("rhs"));
   return declRefs;
+}
+
+std::optional<
+    std::pair<const clang::DeclRefExpr *, std::pair<uint32_t, uint32_t>>>
+SysMatcher::matchRangeCall(const clang::Expr &expr) {
+  auto matchResult = match(rangeMatcher, expr, astCtx);
+  if (matchResult.empty())
+    return std::nullopt;
+  auto rangeCall = matchResult.front().getNodeAs<clang::DeclRefExpr>("caller");
+  auto start = matchResult.front().getNodeAs<clang::IntegerLiteral>("high");
+  auto end = matchResult.front().getNodeAs<clang::IntegerLiteral>("low");
+  return std::make_pair(rangeCall,
+                        std::make_pair(start->getValue().getZExtValue(),
+                                       end->getValue().getZExtValue()));
 }
 
 } // namespace sys

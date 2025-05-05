@@ -495,10 +495,10 @@ def YieldOp : SysOP<"yield", [Pure, ReturnLike, Terminator,
     ParentOneOf<["LoopOp"]>]> {
   let summary = "loop yield and termination operation";
   let description = [{
-    The `scf.yield` operation yields an SSA value from the SCF dialect op region and
+    The `sys.yield` operation yields an SSA value from the SCF dialect op region and
     terminates the regions. The semantics of how the values are yielded is
     defined by the parent operation.
-    If `scf.yield` has any operands, the operands must match the parent
+    If `sys.yield` has any operands, the operands must match the parent
     operation's results.
     If the parent operation defines no values, then the `scf.yield` may be
     left out in the custom syntax and the builders will insert one implicitly.
@@ -515,5 +515,30 @@ def YieldOp : SysOP<"yield", [Pure, ReturnLike, Terminator,
 
 
 //===--------------------------------------------------===//
+// Wait operation
+//===--------------------------------------------------===//
+def EventAnd: I32EnumAttrCase<"And", 1, "and">;
+def EventOr: I32EnumAttrCase<"Or", 2, "or">;
+
+def EventCombKind : I32EnumAttr<
+  "SEventCombKind",
+  "Combination kind for events",
+  [EventAnd, EventOr]> {
+ let cppNamespace = "::mlir::sys";
+}
+def WaitOp : SysOP<"wait", [Pure, ParentOneOf<["ProcDefOP"]>]> {
+  let summary = "Wait operation for events";
+  let description = [{
+    The `sys.wait` is an wait operation for some events to happen.
+  }];
+
+  let arguments = (ins Variadic<Sys_EventAndTime>:$args,
+                       Arg<EventCombKind, "event comb kind">:$kind);
+  let builders = [OpBuilder<(ins), [{ /* nothing to do */ }]>];
+
+  let assemblyFormat =
+      [{ `(` $args `:` type($args) `:` $kind `)`  attr-dict}];
+}
+
 
 #endif

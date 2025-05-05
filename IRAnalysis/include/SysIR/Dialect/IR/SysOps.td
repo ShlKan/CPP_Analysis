@@ -534,11 +534,21 @@ def WaitOp : SysOP<"wait", [Pure, ParentOneOf<["ProcDefOP"]>]> {
 
   let arguments = (ins Variadic<Sys_EventAndTime>:$args,
                        Arg<EventCombKind, "event comb kind">:$kind);
-  let builders = [OpBuilder<(ins), [{ /* nothing to do */ }]>];
 
   let assemblyFormat =
       [{ `(` $args `:` type($args) `:` $kind `)`  attr-dict}];
 }
 
+def NotifyOp : SysOP<"notify", [Pure, ParentOneOf<["ProcDefOP"]>]> {
+  let summary = "Notify operation for events";
+  let description = [{
+    The `sys.notify` is a notify operation for some events to happen.
+  }];
+
+  let arguments = (ins Sys_EventAndTime:$arg);
+
+  let assemblyFormat =
+      [{ `(` $arg `:` type($arg) `)`  attr-dict}];
+}
 
 #endif

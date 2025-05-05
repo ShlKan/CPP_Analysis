@@ -1,6 +1,5 @@
 //===--------------- SysAttrs -------------------===//
 
-#include "SysIR/Dialect/IR/SysAttrs.h"
 #include "SysIR/Dialect/IR/SysDialect.h"
 #include "SysIR/Dialect/IR/SysTypes.h"
 
@@ -18,6 +17,8 @@
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/TypeSwitch.h"
 #include <cstdint>
+
+#include "SysIR/Dialect/IR/SysAttrs.h"
 
 using namespace ::mlir::sys;
 using namespace ::mlir;
@@ -126,6 +127,36 @@ void BitVecLAttr::print(AsmPrinter &printer) const {
     }
     printer << ']';
   }
+}
+
+void TimeAttr::print(AsmPrinter &odsPrinter) const {
+  odsPrinter << getValue().getZExtValue() << " ";
+  switch (getKind()) {
+  case STimeKind::SC_FS:
+    odsPrinter << "fs";
+    break;
+  case STimeKind::SC_PS:
+    odsPrinter << "ps";
+    break;
+  case STimeKind::SC_NS:
+    odsPrinter << "ns";
+    break;
+  case STimeKind::SC_US:
+    odsPrinter << "us";
+    break;
+  case STimeKind::SC_MS:
+    odsPrinter << "ms";
+    break;
+  case STimeKind::SC_SEC:
+    odsPrinter << "sec";
+    break;
+  default:
+    llvm_unreachable("unexpected STimeKind");
+  }
+}
+
+void EventAttr::print(AsmPrinter &odsPrinter) const {
+  odsPrinter << getValue();
 }
 
 void SysDialect::printAttribute(Attribute attr, DialectAsmPrinter &os) const {

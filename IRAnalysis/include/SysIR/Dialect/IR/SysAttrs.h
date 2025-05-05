@@ -5,6 +5,7 @@
 
 #include "SysIR/Dialect/IR/SysTypes.h"
 
+#include "SysIR/Dialect/IR/SysOpsEnums.h.inc"
 #include "mlir/IR/Attributes.h"
 #include "mlir/IR/BuiltinAttributeInterfaces.h"
 

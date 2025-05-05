@@ -14,6 +14,8 @@ include "mlir/IR/EnumAttr.td"
 include "mlir/Interfaces/DataLayoutInterfaces.td"
 include "mlir/IR/CommonAttrConstraints.td"
 include "CIR/Dialect/IR/CIRTypes.td"
+include "SysIR/Dialect/IR/SysAttrs.td"
+
 
 
 //===----------------------------------------------------------------------===//
@@ -106,6 +108,26 @@ def Sys_BitVecLType : Sys_Type<"SBitVecL", "s_bvl",
   let genVerifyDecl = 1;
 }
 
+//===-----------------------------------------------------------------------===//
+// Sys Event Type
+//===-----------------------------------------------------------------------===//
+def Sys_EventType : Sys_Type<"SEvent", "s_event"> {
+  let summary = "System event type.";
+  let description = "SEvent is the event type (sc_event) in SystemC.";
+  let assemblyFormat = [{`event`}];
+}
+
+
+
+//===-----------------------------------------------------------------------===//
+// Sys Time Type
+//===-----------------------------------------------------------------------===//
+def Sys_TimeType : Sys_Type<"STime", "s_time"> {
+  let summary = "System time type.";
+  let description = "STime is the time.";
+  let assemblyFormat = [{`time`}];
+}
+
 
 def SysProcType : Sys_Type<"SProcess", "s_proc"> {
   let summary = "The type of system process";
@@ -132,6 +154,10 @@ def Sys_BVType : AnyTypeOf<[
   Sys_BitVecType, Sys_BitVecLType
 ]>;
 
+
+def Sys_EventAndTime : AnyTypeOf <[
+  Sys_EventType, Sys_TimeType
+]>;
 
 #endif
 

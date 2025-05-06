@@ -44,8 +44,10 @@ void SysGenModule::buildFieldDecl(const clang::FieldDecl *field) {
           mlir::sys::SEventType::get(builder.getContext());
       auto eventAttr = mlir::sys::EventAttr::get(
           builder.getContext(), eventType, field->getDeclName().getAsString());
-      builder.create<mlir::sys::ConstantOp>(getLoc(field->getLocation()),
-                                            eventType, eventAttr);
+      auto eventOp = builder.create<mlir::sys::ConstantOp>(
+          getLoc(field->getLocation()), eventType, eventAttr);
+      mlir::SymbolTable::setSymbolName(eventOp,
+                                       field->getDeclName().getAsString());
     } else {
       llvm_unreachable(
           "The field type is not supported in the current version of SysGen.");

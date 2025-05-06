@@ -51,6 +51,10 @@ void SysGenProcess::buildStmt(mlir::Region &parent, clang::Stmt *stmt) {
     SGM.buildExpr(llvm::dyn_cast_or_null<clang::BinaryOperator>(stmt),
                   SGM.getModule(), symbolTable);
     break;
+  case Stmt::StmtClass::CXXMemberCallExprClass:
+    SGM.buildExpr(llvm::dyn_cast_or_null<clang::CXXMemberCallExpr>(stmt),
+                  SGM.getModule(), symbolTable);
+    break;
   default:
     llvm_unreachable("Unsupported Stmt.");
   }

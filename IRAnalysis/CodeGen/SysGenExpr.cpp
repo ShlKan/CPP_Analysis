@@ -291,6 +291,28 @@ public:
         }
       }
     }
+    if (memCallExpr->getMethodDecl()->getDeclName().getAsString() == "wait") {
+      if (auto eventPtr = memCallExpr->getArg(0)) {
+        auto eventVal = Visit(eventPtr);
+        builder.create<mlir::sys::WaitOp>(SGM.getLoc(memCallExpr->getExprLoc()),
+                                          eventVal,
+                                          mlir::sys::SEventCombKind::And);
+        // TODO: It should a void value.
+        return eventVal;
+      }
+    }
+
+    if (memCallExpr->getMethodDecl()->getDeclName().getAsString() == "notify") {
+      // TODO: Currently, only one argument is supported, i.e., e.notify(),
+      // without time arguments in notify.
+      auto eventVal = Visit(memCallExpr->getImplicitObjectArgument());
+      eventVal.dump();
+      builder.create<mlir::sys::NotifyOp>(SGM.getLoc(memCallExpr->getExprLoc()),
+                                          eventVal);
+      // TODO: It should a void value.
+      return eventVal;
+    }
+
     llvm_unreachable("Unsupported CXXMemberCallExpr.");
   }
 

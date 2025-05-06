@@ -110,4 +110,9 @@ SysMatcher::matchRangeCall(const clang::Expr &expr) {
                                        end->getValue().getZExtValue()));
 }
 
+bool SysMatcher::matchSCEventTy(const clang::QualType &type) {
+  auto matchResult = match(sysSCEventPattern, type, astCtx);
+  return !matchResult.empty();
+}
+
 } // namespace sys

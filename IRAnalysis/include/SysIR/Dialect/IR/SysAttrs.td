@@ -161,11 +161,11 @@ def EventAttr : Sys_Attr<"Event", "event", [TypedAttrInterface]> {
   let description = [{
     An event attribute contains the name of an event.
   }];
-  let parameters = (ins AttributeSelfTypeParameter<"">:$type, "StringRef":$value);
+  let parameters = (ins AttributeSelfTypeParameter<"">:$type, "std::string":$value);
   /*
   let builders = [
     AttrBuilderWithInferredContext<(ins "Type":$type,
-                                        "const llvm::StringRef &":$value), [{
+                                        "const std::string &":$value), [{
       BitVector bv;
       for (const auto &c : value) {
         if (c == '1') {

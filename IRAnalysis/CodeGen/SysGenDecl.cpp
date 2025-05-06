@@ -20,6 +20,9 @@
 #define MLIR_SYS_DECLARATION_GEN_H
 
 #include "SysGenModule.h"
+#include "SysIR/Dialect/IR/SysAttrs.h"
+#include "SysIR/Dialect/IR/SysDialect.h"
+#include "SysIR/Dialect/IR/SysTypes.h"
 #include "mlir/IR/SymbolTable.h"
 #include "mlir/IR/Value.h"
 #include "clang/AST/DeclBase.h"
@@ -28,11 +31,27 @@
 #include "llvm/ADT/Bitfields.h"
 #include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/Support/Casting.h"
+#include "llvm/Support/ErrorHandling.h"
 
 namespace sys {
 
 void SysGenModule::buildFieldDecl(const clang::FieldDecl *field) {
   llvm::ScopedHashTable<const clang::Decl *, mlir::Value> hashTable;
+  if (field->getInClassInitializer() == nullptr) {
+    if (this->getSysMatcher()->matchSCEventTy(field->getType())) {
+      // Create a new event
+      mlir::sys::SEventType eventType =
+          mlir::sys::SEventType::get(builder.getContext());
+      auto eventAttr = mlir::sys::EventAttr::get(
+          builder.getContext(), eventType, field->getDeclName().getAsString());
+      builder.create<mlir::sys::ConstantOp>(getLoc(field->getLocation()),
+                                            eventType, eventAttr);
+    } else {
+      llvm_unreachable(
+          "The field type is not supported in the current version of SysGen.");
+    }
+    return;
+  }
   auto expr = buildExpr(field->getInClassInitializer(), theModule, hashTable);
   mlir::SymbolTable::setSymbolName(expr.getDefiningOp(),
                                    field->getDeclName().getAsString());

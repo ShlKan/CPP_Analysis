@@ -155,8 +155,10 @@ void TimeAttr::print(AsmPrinter &odsPrinter) const {
   }
 }
 
-void EventAttr::print(AsmPrinter &odsPrinter) const {
-  odsPrinter << getValue();
+void EventAttr::print(AsmPrinter &printer) const {
+  printer << "[";
+  printer << getValue();
+  printer << "]";
 }
 
 void SysDialect::printAttribute(Attribute attr, DialectAsmPrinter &os) const {

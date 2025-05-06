@@ -68,10 +68,14 @@ public:
   matchBitVecOp(const clang::Stmt &stmt, const std::string &s);
 
   /*
-   * Match a type against a systemc sc_logic type. If matched then
-   * return the bitwidth of the type, otherwise return nullopt.
+   * Match a type against a systemc sc_logic type.
    */
   bool matchSCLogicTy(const clang::QualType &type);
+
+  /*
+   * Match a type against a systemc sc_event type.
+   */
+  bool matchSCEventTy(const clang::QualType &type);
 
   /*
    * Match a FieldDecl's initial value.
@@ -124,6 +128,10 @@ private:
   /* The pattern of builtin sc_logic Type. */
   TypeMatcher sysSCLogicPattern =
       elaboratedType(namesType(hasDeclaration(namedDecl(hasName("sc_logic")))));
+
+  /* The pattern of builtin sc_event Type. */
+  TypeMatcher sysSCEventPattern =
+      elaboratedType(namesType(hasDeclaration(namedDecl(hasName("sc_event")))));
 
   /* The pattern of declaration  */
   const StatementMatcher fieldInitPattern = implicitCastExpr(hasDescendant(

@@ -107,6 +107,8 @@ void SysGenProcess::buildVarDecl(clang::VarDecl *varDecl) {
                sysIntTy.has_value()) {
       varTy =
           mlir::sys::SBitVecLType::get(builder.getContext(), sysIntTy.value());
+    } else if (SGM.getSysMatcher()->matchSCTimeTy(type)) {
+      varTy = mlir::sys::STimeType::get(builder.getContext());
     }
     auto expr = SGM.buildExpr(init, SGM.getModule(), symbolTable, varTy);
     symbolTable.insert(varDecl, expr);

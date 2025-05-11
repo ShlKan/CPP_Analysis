@@ -40,6 +40,30 @@ class CIRGenFunction;
 }
 namespace sys {
 
+std::unordered_map<std::string, mlir::sys::SUnaryOpKind> unaryOpMap = {
+    {"and_reduce", mlir::sys::SUnaryOpKind::AndRed},
+    {"or_reduce", mlir::sys::SUnaryOpKind::OrRed},
+    {"xor_reduce", mlir::sys::SUnaryOpKind::XorRed},
+    {"nand_reduce", mlir::sys::SUnaryOpKind::NandRed},
+    {"nor_reduce", mlir::sys::SUnaryOpKind::NorRed},
+    {"xnor_reduce", mlir::sys::SUnaryOpKind::XnorRed}};
+
+auto bvOps = std::unordered_map<std::string, mlir::sys::SBinOpKind>{
+    {"&", mlir::sys::SBinOpKind::SAnd},
+    {"|", mlir::sys::SBinOpKind::SOr},
+    {"^", mlir::sys::SBinOpKind::SXor},
+    {">>", mlir::sys::SBinOpKind::SShiftR},
+    {"<<", mlir::sys::SBinOpKind::SShiftL},
+};
+
+auto timeUnitTBL = std::unordered_map<std::string, mlir::sys::STimeKind>{
+    {"SC_FS", mlir::sys::STimeKind::SC_FS},
+    {"SC_MS", mlir::sys::STimeKind::SC_MS},
+    {"SC_NS", mlir::sys::STimeKind::SC_NS},
+    {"SC_PS", mlir::sys::STimeKind::SC_PS},
+    {"SC_SEC", mlir::sys::STimeKind::SC_SEC},
+    {"SC_US", mlir::sys::STimeKind::SC_US}};
+
 class ExprBuilder : public StmtVisitor<ExprBuilder, mlir::Value> {
 private:
   cir::CIRGenBuilderTy &builder;
@@ -173,6 +197,24 @@ public:
       }
       return SGM.getConstSysBVL(SGM.getLoc(cxxConstructExpr->getExprLoc()),
                                 SGM.getBitVecLType(1), valStr);
+    } else if (SGM.getSysMatcher()->matchSCTimeTy(
+                   cxxConstructExpr->getType())) {
+      if (cxxConstructExpr->getNumArgs() == 2) {
+        auto timeUnitPtr = llvm::dyn_cast_or_null<clang::DeclRefExpr>(
+            cxxConstructExpr->getArg(1));
+        auto timeUnitStr = timeUnitPtr->getDecl()->getDeclName().getAsString();
+        auto timeUnit = timeUnitTBL.find(timeUnitStr)->second;
+        auto timeVal = llvm::dyn_cast_or_null<ImplicitCastExpr>(
+            cxxConstructExpr->getArg(0));
+        auto timeValInt =
+            llvm::dyn_cast_or_null<IntegerLiteral>(timeVal->getSubExpr());
+        auto timeValIntVal = timeValInt->getValue();
+        auto timeType = mlir::sys::STimeType::get(builder.getContext());
+        auto time = mlir::sys::TimeAttr::get(builder.getContext(), timeType,
+                                             timeUnit, timeValIntVal);
+        return builder.create<mlir::sys::ConstantOp>(
+            SGM.getLoc(cxxConstructExpr->getExprLoc()), timeType, time);
+      }
     }
     llvm_unreachable("Unsupported CXXConstructExpr.");
   }
@@ -202,13 +244,6 @@ public:
   }
 
   mlir::Value VisitExprWithCleanups(ExprWithCleanups *exprWithClean) {
-    auto bvOps = std::unordered_map<std::string, mlir::sys::SBinOpKind>{
-        {"&", mlir::sys::SBinOpKind::SAnd},
-        {"|", mlir::sys::SBinOpKind::SOr},
-        {"^", mlir::sys::SBinOpKind::SXor},
-        {">>", mlir::sys::SBinOpKind::SShiftR},
-        {"<<", mlir::sys::SBinOpKind::SShiftL},
-    };
     for (const auto &[bvOpName, bvOpKind] : bvOps) {
       if (auto result =
               SGM.getSysMatcher()->matchBitVecOp(*exprWithClean, bvOpName);
@@ -248,13 +283,6 @@ public:
         return Visit(memCallExpr->getImplicitObjectArgument());
       }
     }
-    std::unordered_map<std::string, mlir::sys::SUnaryOpKind> unaryOpMap = {
-        {"and_reduce", mlir::sys::SUnaryOpKind::AndRed},
-        {"or_reduce", mlir::sys::SUnaryOpKind::OrRed},
-        {"xor_reduce", mlir::sys::SUnaryOpKind::XorRed},
-        {"nand_reduce", mlir::sys::SUnaryOpKind::NandRed},
-        {"nor_reduce", mlir::sys::SUnaryOpKind::NorRed},
-        {"xnor_reduce", mlir::sys::SUnaryOpKind::XnorRed}};
 
     if (unaryOpMap.find(
             memCallExpr->getMethodDecl()->getDeclName().getAsString()) !=

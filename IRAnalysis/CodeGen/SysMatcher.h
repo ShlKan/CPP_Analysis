@@ -78,6 +78,11 @@ public:
   bool matchSCEventTy(const clang::QualType &type);
 
   /*
+   * Match a type against a systemc sc_time type.
+   */
+  bool matchSCTimeTy(const clang::QualType &type);
+
+  /*
    * Match a FieldDecl's initial value.
    */
   std::optional<llvm::APInt> matchFieldInitAPInt(const clang::Expr &expr);
@@ -132,6 +137,10 @@ private:
   /* The pattern of builtin sc_event Type. */
   TypeMatcher sysSCEventPattern =
       elaboratedType(namesType(hasDeclaration(namedDecl(hasName("sc_event")))));
+
+  /* The pattern of builtin sc_time Type. */
+  TypeMatcher sysSCTimePattern =
+      elaboratedType(namesType(hasDeclaration(namedDecl(hasName("sc_time")))));
 
   /* The pattern of declaration  */
   const StatementMatcher fieldInitPattern = implicitCastExpr(hasDescendant(

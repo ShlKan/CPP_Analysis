@@ -130,7 +130,7 @@ void BitVecLAttr::print(AsmPrinter &printer) const {
 }
 
 void TimeAttr::print(AsmPrinter &odsPrinter) const {
-  odsPrinter << getValue().getZExtValue() << " ";
+  odsPrinter << ": " << getValue().getZExtValue() << " ";
   switch (getKind()) {
   case STimeKind::SC_FS:
     odsPrinter << "fs";

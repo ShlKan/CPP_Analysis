@@ -115,4 +115,9 @@ bool SysMatcher::matchSCEventTy(const clang::QualType &type) {
   return !matchResult.empty();
 }
 
+bool SysMatcher::matchSCTimeTy(const clang::QualType &type) {
+  auto matchResult = match(sysSCTimePattern, type, astCtx);
+  return !matchResult.empty();
+}
+
 } // namespace sys
